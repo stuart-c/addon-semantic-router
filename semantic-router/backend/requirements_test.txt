@@ -3,3 +3,4 @@ pytest-cov
 httpx
 black
 flake8
+pytest-asyncio
