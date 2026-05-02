@@ -282,6 +282,32 @@ def test_log_operations():
     assert response.status_code == 204
 
 
+def test_frontend_route():
+    # We need index.html to exist for this to pass
+    os.makedirs("semantic-router/frontend", exist_ok=True)
+    with open("semantic-router/frontend/index.html", "w") as f:
+        f.write("<html></html>")
+
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+
+
+def test_query_route():
+    response = client.post(
+        "/query",
+        json={
+            "model": "gpt-3.5-turbo",
+            "messages": [{"role": "user", "content": "hello"}],
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["object"] == "chat.completion"
+    assert data["choices"][0]["message"]["content"] == "Processed query: hello"
+    assert "route" in data
+
+
 def test_llm_create_secret_validation():
     # Test validator on LLMCreate (line 19 in schemas.py)
     response = client.post("/api/llm", json={"name": "X", "url": "U", "secret": "***"})
