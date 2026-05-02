@@ -17,10 +17,24 @@ if docker ps -a --format '{{.Names}}' | grep -q '^semantic-router-dev$'; then
 fi
 
 # Run the container in detached mode, exposing port 8000
+echo "Starting container..."
 docker run -d --name semantic-router-dev -p 8000:8000 "$IMAGE_NAME"
 
+# Setup cleanup on exit
+cleanup() {
+  echo ""
+  echo "Stopping container..."
+  docker stop semantic-router-dev > /dev/null
+}
+trap cleanup EXIT SIGINT SIGTERM
+
 # Give the service a moment to start
-sleep 3
+sleep 2
 
 # Open the frontend in the default browser
-xdg-open http://localhost:8000
+echo "Opening browser at http://localhost:8000..."
+xdg-open http://localhost:8000 > /dev/null 2>&1 &
+
+# Follow logs
+echo "Following logs (Press Ctrl+C to stop)..."
+docker logs -f semantic-router-dev
