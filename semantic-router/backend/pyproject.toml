@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semantic-router-backend"
+version = "0.1.0"
+description = "RESTful API for the Semantic Router backend"
+authors = [
+    { name = "Stuart Clark", email = "stuart.clark@Jahingo.com" }
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy",
+    "pydantic"
+]
+requires-python = ">=3.11"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".."]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = "E203"
+exclude = ".venv,venv,build,dist"
