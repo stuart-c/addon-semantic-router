@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator, field_serializer
 from typing import Optional, List
 from datetime import datetime
 from .models import LogLevel
@@ -11,6 +11,13 @@ class LLMBase(BaseModel):
     secret: Optional[str] = None
     timeout: Optional[int] = 30
 
+    @field_validator("secret")
+    @classmethod
+    def validate_secret(cls, v):
+        if v == "***":
+            raise ValueError("Secret cannot be '***'")
+        return v
+
 
 class LLMCreate(LLMBase):
     pass
@@ -22,10 +29,23 @@ class LLMUpdate(BaseModel):
     secret: Optional[str] = None
     timeout: Optional[int] = None
 
+    @field_validator("secret")
+    @classmethod
+    def validate_secret(cls, v):
+        if v == "***":
+            raise ValueError("Secret cannot be '***'")
+        return v
+
 
 class LLM(LLMBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("secret")
+    def serialize_secret(self, secret: Optional[str]):
+        if secret:
+            return "***"
+        return secret
 
 
 # Route Utterance Schemas
