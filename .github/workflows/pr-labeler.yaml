@@ -1,0 +1,16 @@
+name: PR Labeler
+
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+jobs:
+  label:
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@8558fd782985f72534a2e21245050f22d46e3e57 # v5.0.0
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"

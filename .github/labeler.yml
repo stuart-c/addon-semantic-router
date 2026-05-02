@@ -1,0 +1,20 @@
+backend:
+  - semantic-router/backend/**/*
+  - semantic-router/Dockerfile
+  - semantic-router/requirements.txt
+
+documentation:
+  - "*.md"
+  - docs/**/*
+
+testing:
+  - semantic-router/backend/tests/**/*
+  - .github/workflows/test.yaml
+
+github-actions:
+  - .github/workflows/**/*
+
+dependencies:
+  - semantic-router/backend/requirements.txt
+  - semantic-router/backend/requirements_test.txt
+  - .github/dependabot.yml
