@@ -39,6 +39,8 @@ COPY --from=builder /opt/venv /opt/venv
 
 # Copy application code
 COPY backend/ /app/backend/
+COPY frontend/ /app/frontend/
+COPY config.yaml /app/config.yaml
 
 # Copy run script
 COPY run.sh /app/run.sh
