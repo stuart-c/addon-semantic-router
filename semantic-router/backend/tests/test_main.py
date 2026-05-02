@@ -317,9 +317,9 @@ def test_llm_create_secret_validation():
 
 def test_get_version_failure():
     from unittest.mock import patch
-    from backend.main import get_version
+    from backend.utils import get_version
 
-    with patch("builtins.open", side_effect=Exception("Read error")):
+    with patch("backend.utils.open", side_effect=Exception("Read error")):
         assert get_version() == "0.0.0"
 
 
