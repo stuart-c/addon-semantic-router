@@ -6,21 +6,27 @@ from sqlalchemy import (
     String,
     Integer,
     Float,
-    JSON,
     DateTime,
     ForeignKey,
     Enum,
-    func,
-    event,
+    Boolean,
+    CheckConstraint,
 )
+
 
 class Base(DeclarativeBase):
     pass
+
 
 class LogLevel(enum.Enum):
     all = "all"
     default = "default"
     error = "error"
+    info = "info"
+    debug = "debug"
+    warning = "warning"
+    critical = "critical"
+
 
 class LLM(Base):
     __tablename__ = "llm"
@@ -30,9 +36,11 @@ class LLM(Base):
     url = Column(String)
     secret = Column(String)
     timeout = Column(Integer)
-    
+    enabled = Column(Boolean, default=True)
+
     routes = relationship("Route", back_populates="llm_rel")
     logs = relationship("Log", back_populates="llm_rel")
+
 
 class Route(Base):
     __tablename__ = "route"
@@ -40,10 +48,12 @@ class Route(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String)
     llm = Column(Integer, ForeignKey("llm.id"))
-    
+    enabled = Column(Boolean, default=True)
+
     llm_rel = relationship("LLM", back_populates="routes")
     utterances = relationship("RouteUtterance", back_populates="route_rel")
     logs = relationship("Log", back_populates="route_rel")
+
 
 class RouteUtterance(Base):
     __tablename__ = "route_utterance"
@@ -51,17 +61,21 @@ class RouteUtterance(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     route_id = Column(Integer, ForeignKey("route.id"))
     utterance = Column(String)
-    
+
     route_rel = relationship("Route", back_populates="utterances")
+
 
 class Config(Base):
     __tablename__ = "config"
+    __table_args__ = (CheckConstraint("id = 1", name="config_singleton"),)
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, default=1)
     default_llm = Column(Integer, ForeignKey("llm.id"))
     log_level = Column(Enum(LogLevel))
-    
+    log_retention = Column(Integer, default=30)
+
     llm_rel = relationship("LLM")
+
 
 class Log(Base):
     __tablename__ = "log"
@@ -74,6 +88,6 @@ class Log(Base):
     response = Column(String)
     llm = Column(Integer, ForeignKey("llm.id"))
     original_id = Column(String)
-    
+
     route_rel = relationship("Route", back_populates="logs")
     llm_rel = relationship("LLM", back_populates="logs")
