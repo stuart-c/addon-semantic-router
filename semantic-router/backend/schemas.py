@@ -10,10 +10,11 @@ class LLMBase(BaseModel):
     url: str
     secret: Optional[str] = None
     timeout: Optional[int] = 30
+    enabled: bool = True
 
     @field_validator("secret")
     @classmethod
-    def validate_secret(cls, v):
+    def check_secret(cls, v: Optional[str]) -> Optional[str]:
         if v == "***":
             raise ValueError("Secret cannot be '***'")
         return v
@@ -28,10 +29,11 @@ class LLMUpdate(BaseModel):
     url: Optional[str] = None
     secret: Optional[str] = None
     timeout: Optional[int] = None
+    enabled: Optional[bool] = None
 
     @field_validator("secret")
     @classmethod
-    def validate_secret(cls, v):
+    def check_secret(cls, v: Optional[str]) -> Optional[str]:
         if v == "***":
             raise ValueError("Secret cannot be '***'")
         return v
@@ -42,10 +44,10 @@ class LLM(LLMBase):
     model_config = ConfigDict(from_attributes=True)
 
     @field_serializer("secret")
-    def serialize_secret(self, secret: Optional[str]):
+    def serialize_secret(self, secret: Optional[str]) -> str:
         if secret:
             return "***"
-        return secret
+        return ""
 
 
 # Route Utterance Schemas
@@ -71,6 +73,7 @@ class RouteUtterance(RouteUtteranceBase):
 class RouteBase(BaseModel):
     name: str
     llm: int
+    enabled: bool = True
 
 
 class RouteCreate(RouteBase):
@@ -80,6 +83,7 @@ class RouteCreate(RouteBase):
 class RouteUpdate(BaseModel):
     name: Optional[str] = None
     llm: Optional[int] = None
+    enabled: Optional[bool] = None
 
 
 class Route(RouteBase):
