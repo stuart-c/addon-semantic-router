@@ -1,47 +1,58 @@
-# Stage 1: Build dependencies
 ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
-FROM python:3.11-alpine AS builder
+
+# Stage 1: Build dependencies
+FROM $BUILD_FROM AS builder
+
+# Install build dependencies
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    build-base \
+    libffi-dev \
+    python3-dev
 
 WORKDIR /build
 
-# Install build dependencies
-RUN apk add --no-cache build-base libffi-dev
+# Set up virtual environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy requirements and install
 COPY backend/requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Final image
-# Using Home Assistant base image build argument
 FROM $BUILD_FROM
 
 # Set environment variables
 ENV LANG=C.UTF-8 \
-    PYTHONPATH="/app"
+    PYTHONPATH="/app" \
+    PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
 
-# Install Python 3 and basic tools
-RUN apk add --no-cache \
-    python3 \
-    py3-pip
+# Install Python 3
+RUN apk add --no-cache python3
 
-# Copy installed dependencies from the builder stage
-COPY --from=builder /install /usr/local
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
 
 # Copy application code
 COPY backend/ /app/backend/
+
+# Copy run script
+COPY run.sh /app/run.sh
+RUN chmod a+x /app/run.sh
 
 # Home Assistant Add-on labels
 LABEL \
     io.hass.name="Semantic Router" \
     io.hass.description="A semantic router for LLM applications" \
-    io.hass.arch="amd64|armv7|armhf|aarch64" \
+    io.hass.arch="amd64|aarch64" \
     io.hass.type="addon"
 
 # Expose the API port
 EXPOSE 8000
 
 # Set the command to run the application
-# We use uvicorn directly. In a more complex setup, we might use an s6 service.
-CMD ["python3", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/run.sh"]
