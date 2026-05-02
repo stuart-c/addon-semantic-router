@@ -36,3 +36,6 @@ app = FastAPI(
 
 # Include the CRUD routes with the /api prefix
 app.include_router(routes.crud.router, prefix="/api")
+
+# Include the Frontend routes at the root
+app.include_router(routes.frontend.router)
