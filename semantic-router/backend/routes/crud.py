@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from .. import schemas, crud
 from ..database import get_db
+from ..router_manager import router_manager
 
 router = APIRouter()
 
@@ -55,7 +56,9 @@ def get_routes(db: Session = Depends(get_db)):
     "/route", response_model=schemas.Route, status_code=status.HTTP_201_CREATED
 )
 def create_route(route_in: schemas.RouteCreate, db: Session = Depends(get_db)):
-    return crud.route.create(db, obj_in=route_in)
+    route = crud.route.create(db, obj_in=route_in)
+    router_manager.refresh(db)
+    return route
 
 
 @router.get("/route/{id}", response_model=schemas.Route)
@@ -71,7 +74,9 @@ def update_route(id: int, route_in: schemas.RouteUpdate, db: Session = Depends(g
     db_route = crud.route.get(db, id=id)
     if not db_route:
         raise HTTPException(status_code=404, detail="Route not found")
-    return crud.route.update(db, db_obj=db_route, obj_in=route_in)
+    updated_route = crud.route.update(db, db_obj=db_route, obj_in=route_in)
+    router_manager.refresh(db)
+    return updated_route
 
 
 @router.delete("/route/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -79,6 +84,7 @@ def delete_route(id: int, db: Session = Depends(get_db)):
     db_route = crud.route.remove(db, id=id)
     if not db_route:
         raise HTTPException(status_code=404, detail="Route not found")
+    router_manager.refresh(db)
     return None
 
 
@@ -101,9 +107,9 @@ def create_route_utterance(
     db_route = crud.route.get(db, id=id)
     if not db_route:
         raise HTTPException(status_code=404, detail="Route not found")
-    return crud.utterance.create(
-        db, obj_in=utterance_in.model_dump() | {"route_id": id}
-    )
+    utt = crud.utterance.create(db, obj_in=utterance_in.model_dump() | {"route_id": id})
+    router_manager.refresh(db)
+    return utt
 
 
 @router.get(
@@ -132,7 +138,9 @@ def update_utterance(
     )
     if not db_utterance:
         raise HTTPException(status_code=404, detail="Utterance not found")
-    return crud.utterance.update(db, db_obj=db_utterance, obj_in=utterance_in)
+    updated_utt = crud.utterance.update(db, db_obj=db_utterance, obj_in=utterance_in)
+    router_manager.refresh(db)
+    return updated_utt
 
 
 @router.delete(
@@ -145,6 +153,7 @@ def delete_utterance(route_id: int, utterance_id: int, db: Session = Depends(get
     if not db_utterance:
         raise HTTPException(status_code=404, detail="Utterance not found")
     crud.utterance.remove(db, id=utterance_id)
+    router_manager.refresh(db)
     return None
 
 

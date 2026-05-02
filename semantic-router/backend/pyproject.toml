@@ -9,6 +9,10 @@ authors = [
     { name = "Stuart Clark", email = "stuart.clark@Jahingo.com" }
 ]
 dependencies = [
+    "semantic-router",
+    "httpx",
+    "torch",
+    "sentence-transformers",
     "fastapi",
     "uvicorn",
     "sqlalchemy",

@@ -9,6 +9,7 @@ class LLMBase(BaseModel):
     name: str
     url: str
     secret: Optional[str] = None
+    model: Optional[str] = None
     timeout: Optional[int] = 30
     enabled: bool = True
 
@@ -28,6 +29,7 @@ class LLMUpdate(BaseModel):
     name: Optional[str] = None
     url: Optional[str] = None
     secret: Optional[str] = None
+    model: Optional[str] = None
     timeout: Optional[int] = None
     enabled: Optional[bool] = None
 
