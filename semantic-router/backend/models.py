@@ -35,6 +35,7 @@ class LLM(Base):
     name = Column(String)
     url = Column(String)
     secret = Column(String)
+    model = Column(String)
     timeout = Column(Integer)
     enabled = Column(Boolean, default=True)
 

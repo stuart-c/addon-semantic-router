@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
@@ -8,7 +9,6 @@ from backend.database import get_db
 from backend.models import Base
 from backend import models
 from datetime import datetime
-from unittest.mock import patch
 import os
 
 # Use a separate test database
@@ -294,18 +294,46 @@ def test_frontend_route():
 
 
 def test_query_route():
-    response = client.post(
-        "/query",
-        json={
-            "model": "gpt-3.5-turbo",
-            "messages": [{"role": "user", "content": "hello"}],
-        },
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["object"] == "chat.completion"
-    assert data["choices"][0]["message"]["content"] == "Processed query: hello"
-    assert "route" in data
+    # Setup: Create an LLM and set as default
+    llm_id = client.post(
+        "/api/llm", json={"name": "Test LLM", "url": "http://test.ai/v1"}
+    ).json()["id"]
+    client.put("/api/config", json={"default_llm": llm_id})
+
+    # Mock the LLM response
+    mock_resp = {
+        "id": "chatcmpl-123",
+        "object": "chat.completion",
+        "created": 123456789,
+        "model": "test-model",
+        "choices": [
+            {
+                "index": 0,
+                "message": {"role": "assistant", "content": "Mocked response"},
+                "finish_reason": "stop",
+            }
+        ],
+        "usage": {"prompt_tokens": 5, "completion_tokens": 5, "total_tokens": 10},
+    }
+
+    with patch("httpx.AsyncClient.post") as mock_post:
+        mock_post.return_value = MagicMock()
+        mock_post.return_value.json.return_value = mock_resp
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.raise_for_status = MagicMock()
+
+        response = client.post(
+            "/query",
+            json={
+                "model": "gpt-3.5-turbo",
+                "messages": [{"role": "user", "content": "hello"}],
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["choices"][0]["message"]["content"] == "Mocked response"
+        assert "route" in data
+        assert "llm" in data
 
 
 def test_llm_create_secret_validation():

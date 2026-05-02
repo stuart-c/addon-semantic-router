@@ -3,3 +3,6 @@ uvicorn
 sqlalchemy
 pydantic
 aiofiles
+semantic-router
+httpx
+scikit-learn

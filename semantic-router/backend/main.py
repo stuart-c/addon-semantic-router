@@ -2,8 +2,9 @@ import asyncio
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from . import models, routes, logging_utils, utils
-from .database import engine
+from .database import engine, SessionLocal
 from .tasks import log_cleanup_task
+from .router_manager import router_manager
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -13,6 +14,13 @@ models.Base.metadata.create_all(bind=engine)
 async def lifespan(app: FastAPI):
     # Initialize logging from HA options
     logging_utils.setup_logging()
+
+    # Initialize RouteLayer
+    db = SessionLocal()
+    try:
+        router_manager.initialize(db)
+    finally:
+        db.close()
 
     # Start background tasks
     cleanup_task = asyncio.create_task(log_cleanup_task())
@@ -37,10 +45,6 @@ app = FastAPI(
 # Include the CRUD routes with the /api prefix
 app.include_router(routes.crud.router, prefix="/api")
 
-# Include the Query routes
-app.include_router(routes.query.router)
-
-# Include the Frontend routes at the root
 # Include the Query routes at the root
 app.include_router(routes.query.router)
 
