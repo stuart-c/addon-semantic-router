@@ -1,0 +1,21 @@
+name: "Semantic Router"
+version: "0.1.0"
+slug: "semantic_router"
+description: "A semantic router for LLM applications"
+url: "https://github.com/stuart-c/addon-semantic-router"
+arch:
+  - amd64
+  - armv7
+  - armhf
+  - aarch64
+boot: auto
+map:
+  - config:rw
+  - share:rw
+  - ssl
+options:
+  log_level: "info"
+schema:
+  log_level: "list(all|default|error|info|debug|warning|critical)?"
+ports:
+  8000/tcp: 8000
