@@ -96,11 +96,13 @@ class Route(RouteBase):
 class ConfigBase(BaseModel):
     default_llm: Optional[int] = None
     log_level: LogLevel = LogLevel.default
+    log_retention: int = 30
 
 
 class ConfigUpdate(BaseModel):
     default_llm: Optional[int] = None
     log_level: Optional[LogLevel] = None
+    log_retention: Optional[int] = None
 
 
 class ConfigSchema(ConfigBase):
@@ -122,3 +124,47 @@ class LogBase(BaseModel):
 
 class Log(LogBase):
     model_config = ConfigDict(from_attributes=True)
+
+
+# OpenAI Compatible Schemas
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatCompletionRequest(BaseModel):
+    model: str
+    messages: List[ChatMessage]
+    temperature: Optional[float] = 1.0
+    top_p: Optional[float] = 1.0
+    n: Optional[int] = 1
+    stream: Optional[bool] = False
+    stop: Optional[List[str]] = None
+    max_tokens: Optional[int] = None
+    presence_penalty: Optional[float] = 0.0
+    frequency_penalty: Optional[float] = 0.0
+    user: Optional[str] = None
+
+
+class ChatCompletionResponseChoice(BaseModel):
+    index: int
+    message: ChatMessage
+    finish_reason: str
+
+
+class ChatCompletionUsage(BaseModel):
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+
+class ChatCompletionResponse(BaseModel):
+    id: str
+    object: str = "chat.completion"
+    created: int
+    model: str
+    choices: List[ChatCompletionResponseChoice]
+    usage: ChatCompletionUsage
+    # Custom fields for Semantic Router
+    route: Optional[str] = None
+    llm: Optional[str] = None

@@ -38,4 +38,7 @@ app = FastAPI(
 app.include_router(routes.crud.router, prefix="/api")
 
 # Include the Frontend routes at the root
+# Include the Query routes at the root
+app.include_router(routes.query.router)
+
 app.include_router(routes.frontend.router)
