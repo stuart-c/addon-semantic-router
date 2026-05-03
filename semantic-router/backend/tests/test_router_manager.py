@@ -42,10 +42,10 @@ def test_router_manager_not_available(db, manager):
         assert manager.get_router() is None
 
 
-def test_router_manager_initialize_huggingface(db, manager):
+def test_router_manager_initialize_fastembed(db, manager):
     with (
         patch("backend.router_manager.SEMANTIC_ROUTER_AVAILABLE", True),
-        patch("backend.router_manager.HuggingFaceEncoder") as mock_hf,
+        patch("backend.router_manager.FastEmbedEncoder") as mock_fe,
         patch("backend.router_manager.RouteLayer") as mock_layer,
         patch("backend.router_manager.Route"),
     ):
@@ -58,39 +58,18 @@ def test_router_manager_initialize_huggingface(db, manager):
 
         manager.initialize(db)
 
-        mock_hf.assert_called_once()
+        mock_fe.assert_called_once()
+        # Verify cache_dir is passed
+        args, kwargs = mock_fe.call_args
+        assert "cache_dir" in kwargs
         mock_layer.assert_called_once()
-        assert manager.get_router() is not None
-
-
-def test_router_manager_initialize_tfidf_fallback(db, manager):
-    with (
-        patch("backend.router_manager.SEMANTIC_ROUTER_AVAILABLE", True),
-        patch(
-            "backend.router_manager.HuggingFaceEncoder",
-            side_effect=Exception("No torch"),
-        ),
-        patch("backend.router_manager.TfidfEncoder") as mock_tfidf,
-        patch("backend.router_manager.RouteLayer"),
-        patch("backend.router_manager.Route"),
-    ):
-        # Create a route in DB
-        r = Route(name="test", enabled=True)
-        db.add(r)
-        db.commit()
-        db.add(RouteUtterance(route_id=r.id, utterance="hello"))
-        db.commit()
-
-        manager.initialize(db)
-
-        mock_tfidf.assert_called_once()
         assert manager.get_router() is not None
 
 
 def test_router_manager_no_routes(db, manager):
     with (
         patch("backend.router_manager.SEMANTIC_ROUTER_AVAILABLE", True),
-        patch("backend.router_manager.TfidfEncoder"),
+        patch("backend.router_manager.FastEmbedEncoder"),
     ):
         # No routes in DB
         manager.initialize(db)
@@ -121,17 +100,12 @@ def test_router_manager_initialize_exception(db, manager):
     with (
         patch("backend.router_manager.SEMANTIC_ROUTER_AVAILABLE", True),
         patch(
-            "backend.router_manager.HuggingFaceEncoder",
+            "backend.router_manager.FastEmbedEncoder",
             side_effect=Exception("Critical error"),
         ),
     ):
-        # This will trigger the outer try-except in initialize
-        with patch(
-            "backend.router_manager.TfidfEncoder",
-            side_effect=Exception("Total failure"),
-        ):
-            manager.initialize(db)
-            assert manager.get_router() is None
+        manager.initialize(db)
+        assert manager.get_router() is None
 
 
 def test_router_manager_refresh(db, manager):

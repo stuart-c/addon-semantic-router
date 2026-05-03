@@ -476,7 +476,7 @@ def test_query_route_target_fail_no_fallback():
             json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
         )
         assert response.status_code == 502
-        assert "no fallback configured" in response.text.lower()
+        assert "llm call failed" in response.text.lower()
 
 
 def test_query_route_both_target_and_fallback_fail():
@@ -507,7 +507,7 @@ def test_query_route_both_target_and_fallback_fail():
             json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
         )
         assert response.status_code == 502
-        assert "both target and fallback" in response.text.lower()
+        assert "both failed" in response.text.lower()
 
 
 def test_query_route_llm_overrides():

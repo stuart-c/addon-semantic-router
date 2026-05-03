@@ -2,7 +2,5 @@ fastapi
 uvicorn
 sqlalchemy
 pydantic
-aiofiles
-semantic-router
+semantic-router[fastembed]
 httpx
-scikit-learn
