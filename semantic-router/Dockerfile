@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:2023.11.0
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
 
 # Stage 1: Build dependencies
 FROM $BUILD_FROM AS builder
@@ -10,12 +10,13 @@ RUN apk add --no-cache \
     build-base \
     libffi-dev \
     python3-dev \
-    libstdc++
+    libstdc++ \
+    onnxruntime --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 
 WORKDIR /build
 
 # Set up virtual environment
-RUN python3 -m venv /opt/venv
+RUN python3 -m venv --system-site-packages /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy requirements and install
@@ -37,7 +38,8 @@ ENV LANG=C.UTF-8 \
 WORKDIR /app
 
 # Install Python 3
-RUN apk add --no-cache python3 libstdc++
+RUN apk add --no-cache python3 libstdc++ \
+    onnxruntime --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
