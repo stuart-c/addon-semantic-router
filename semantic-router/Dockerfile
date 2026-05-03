@@ -1,38 +1,46 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
-
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:bookworm
+ 
 # Stage 1: Build dependencies
 FROM $BUILD_FROM AS builder
 
 # Install build dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
-    py3-pip \
-    build-base \
+    python3-pip \
+    python3-venv \
+    python3-dev \
+    build-essential \
     libffi-dev \
-    python3-dev
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
-# Set up virtual environment
+# Create virtual environment
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy requirements and install
 COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir \
+        -r requirements.txt
 
 # Stage 2: Final image
 FROM $BUILD_FROM
 
 # Set environment variables
 ENV LANG=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
     PYTHONPATH="/app" \
     PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
 
-# Install Python 3
-RUN apk add --no-cache python3
+# Install Python 3 and runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
@@ -53,8 +61,8 @@ LABEL \
     io.hass.arch="amd64|aarch64" \
     io.hass.type="addon"
 
-# Expose the API port
+# Expose port
 EXPOSE 8000
 
-# Set the command to run the application
-CMD ["/app/run.sh"]
+# Start application
+CMD [ "/app/run.sh" ]
