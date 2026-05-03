@@ -119,9 +119,15 @@ class LogBase(BaseModel):
     duration: float
     route: Optional[int] = None
     query: str
+    request: str
     response: str
+    failure_reason: Optional[str] = None
     llm: Optional[int] = None
     original_id: Optional[str] = None
+
+
+class LogCreate(LogBase):
+    pass
 
 
 class Log(LogBase):
