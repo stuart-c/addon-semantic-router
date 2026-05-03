@@ -9,7 +9,8 @@ RUN apk add --no-cache \
     py3-pip \
     build-base \
     libffi-dev \
-    python3-dev
+    python3-dev \
+    libstdc++
 
 WORKDIR /build
 
@@ -20,7 +21,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy requirements and install
 COPY backend/requirements.txt .
 RUN pip install --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir \
+        --find-links https://wheels.home-assistant.io/musllinux/ \
+        -r requirements.txt
 
 # Stage 2: Final image
 FROM $BUILD_FROM
@@ -33,7 +36,7 @@ ENV LANG=C.UTF-8 \
 WORKDIR /app
 
 # Install Python 3
-RUN apk add --no-cache python3
+RUN apk add --no-cache python3 libstdc++
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
