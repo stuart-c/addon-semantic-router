@@ -19,7 +19,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy requirements and install
 COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Final image
 FROM $BUILD_FROM
