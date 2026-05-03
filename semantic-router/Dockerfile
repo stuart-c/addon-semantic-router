@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:2024.1.6
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:2023.11.0
 
 # Stage 1: Build dependencies
 FROM $BUILD_FROM AS builder
