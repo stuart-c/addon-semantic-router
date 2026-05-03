@@ -4,7 +4,10 @@ ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
 FROM $BUILD_FROM AS builder
 
 # Install build dependencies
-RUN apk add --no-cache \
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.19/main" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.19/community" >> /etc/apk/repositories && \
+    apk update && \
+    apk add --no-cache \
     python3.11 \
     py3.11-pip \
     build-base \
@@ -36,8 +39,11 @@ ENV LANG=C.UTF-8 \
 
 WORKDIR /app
 
-# Install Python 3
-RUN apk add --no-cache python3.11 libstdc++
+# Install Python 3.11
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.19/main" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.19/community" >> /etc/apk/repositories && \
+    apk update && \
+    apk add --no-cache python3.11 libstdc++
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
