@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:2024.1.6
 
 # Stage 1: Build dependencies
 FROM $BUILD_FROM AS builder
@@ -22,7 +22,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY backend/requirements.txt .
 RUN pip install --upgrade pip setuptools wheel && \
     pip install --no-cache-dir \
-        --find-links https://wheels.home-assistant.io/musllinux/ \
+        --index-url https://wheels.home-assistant.io/musllinux-index/ \
+        --extra-index-url https://pypi.org/simple \
         -r requirements.txt
 
 # Stage 2: Final image
