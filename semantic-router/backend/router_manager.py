@@ -1,11 +1,12 @@
 import logging
+import os
 from typing import Optional
 from sqlalchemy.orm import Session
 
 try:
     from semantic_router import Route
     from semantic_router.layer import RouteLayer
-    from semantic_router.encoders import HuggingFaceEncoder, TfidfEncoder
+    from semantic_router.encoders import FastEmbedEncoder
 
     SEMANTIC_ROUTER_AVAILABLE = True
 except ImportError:
@@ -18,11 +19,9 @@ except ImportError:
     class RouteLayer:
         pass
 
-    class HuggingFaceEncoder:
-        pass
-
-    class TfidfEncoder:
-        pass
+    class FastEmbedEncoder:
+        def __init__(self, *args, **kwargs):
+            pass
 
 
 from . import models
@@ -51,15 +50,21 @@ class RouteLayerManager:
             if self._encoder is None:
                 # Initialize encoder only once
                 try:
-                    # Prefer HuggingFaceEncoder if dependencies (torch) are present
-                    self._encoder = HuggingFaceEncoder(name="all-MiniLM-L6-v2")
-                    logger.info("Using HuggingFaceEncoder for semantic routing.")
-                except Exception as e:
-                    # Fallback to TfidfEncoder which is lightweight and torch-free
-                    logger.warning(
-                        f"HuggingFaceEncoder not available ({e}). Using TfidfEncoder."
+                    # In Home Assistant, /data is persistent. For local dev, use ./data.
+                    base_data_dir = "/data" if os.path.exists("/data") else "./data"
+                    cache_dir = os.path.join(base_data_dir, "models")
+                    os.makedirs(cache_dir, exist_ok=True)
+
+                    logger.info(
+                        f"Initializing FastEmbedEncoder with cache at {cache_dir}..."
                     )
-                    self._encoder = TfidfEncoder()
+                    self._encoder = FastEmbedEncoder(
+                        name="BAAI/bge-small-en-v1.5", cache_dir=cache_dir
+                    )
+                    logger.info("FastEmbedEncoder (ONNX) initialized.")
+                except Exception as e:
+                    logger.error(f"Failed to initialize FastEmbedEncoder: {e}")
+                    self._encoder = None
 
             # Fetch enabled routes from DB
             db_routes = db.query(models.Route).filter(models.Route.enabled).all()
