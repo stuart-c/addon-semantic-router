@@ -22,10 +22,6 @@ class LogLevel(enum.Enum):
     all = "all"
     default = "default"
     error = "error"
-    info = "info"
-    debug = "debug"
-    warning = "warning"
-    critical = "critical"
 
 
 class LLM(Base):
@@ -86,7 +82,9 @@ class Log(Base):
     duration = Column(Float)
     route = Column(Integer, ForeignKey("route.id"))
     query = Column(String)
+    request = Column(String)
     response = Column(String)
+    failure_reason = Column(String)
     llm = Column(Integer, ForeignKey("llm.id"))
     original_id = Column(String)
 
