@@ -10,11 +10,12 @@ authors = [
 ]
 dependencies = [
     "semantic-router[fastembed]==0.1.12",
+    "fastembed==0.3.3",
     "httpx==0.28.1",
     "fastapi==0.136.1",
     "uvicorn==0.46.0",
     "sqlalchemy==2.0.49",
-    "pydantic==2.13.3"
+    "pydantic==2.12.5"
 ]
 requires-python = ">=3.11"
 
