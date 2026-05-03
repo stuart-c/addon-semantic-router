@@ -5,18 +5,17 @@ FROM $BUILD_FROM AS builder
 
 # Install build dependencies
 RUN apk add --no-cache \
-    python3 \
-    py3-pip \
+    python3.11 \
+    py3.11-pip \
     build-base \
     libffi-dev \
-    python3-dev \
-    libstdc++ \
-    onnxruntime --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+    python3.11-dev \
+    libstdc++
 
 WORKDIR /build
 
 # Set up virtual environment
-RUN python3 -m venv --system-site-packages /opt/venv
+RUN python3.11 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy requirements and install
@@ -38,8 +37,7 @@ ENV LANG=C.UTF-8 \
 WORKDIR /app
 
 # Install Python 3
-RUN apk add --no-cache python3 libstdc++ \
-    onnxruntime --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+RUN apk add --no-cache python3.11 libstdc++
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
