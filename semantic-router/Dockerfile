@@ -32,6 +32,7 @@ FROM $BUILD_FROM
 ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    PYTHONPATH="/app" \
     PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
@@ -45,13 +46,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /opt/venv /opt/venv
 
 # Copy application code
-COPY . .
+COPY backend/ /app/backend/
+COPY frontend/ /app/frontend/
+COPY config.yaml /app/config.yaml
 
-# Ensure run.sh is executable
-RUN chmod a+x run.sh
+# Copy run script
+COPY run.sh /app/run.sh
+RUN chmod a+x /app/run.sh
+
+# Home Assistant Add-on labels
+LABEL \
+    io.hass.name="Semantic Router" \
+    io.hass.description="A semantic router for LLM applications" \
+    io.hass.arch="amd64|aarch64" \
+    io.hass.type="addon"
 
 # Expose port
 EXPOSE 8000
 
 # Start application
-CMD [ "./run.sh" ]
+CMD [ "/app/run.sh" ]
