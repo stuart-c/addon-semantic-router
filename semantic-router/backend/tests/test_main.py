@@ -8,6 +8,7 @@ from backend.main import app
 from backend.database import get_db
 from backend.models import Base
 from backend import models
+import httpx
 from datetime import datetime
 import os
 
@@ -248,9 +249,6 @@ def test_config_operations():
 
 def test_config_auto_create():
     # PUT config when none exists (e.g. database just initialized)
-    # The autouse fixture drops all, but get_config might have been
-    # called by other tests.
-    # We can rely on the fact that setup_database runs for each test.
     update_resp = client.put("/api/config", json={"log_level": "error"})
     assert update_resp.status_code == 200
     assert update_resp.json()["log_level"] == "error"
@@ -260,9 +258,6 @@ def test_config_auto_create():
 
 
 def test_log_operations():
-    # We don't have a POST for logs as they are likely generated internally,
-    # but we can test list and delete if we manually insert one via DB or endpoint.
-    # Since there's no POST /api/log, I'll assume they exist or verify empty list.
     assert len(client.get("/api/log").json()) == 0
 
     # Manually insert a log via DB to test delete
@@ -283,7 +278,6 @@ def test_log_operations():
 
 
 def test_frontend_route():
-    # We need index.html to exist for this to pass
     os.makedirs("semantic-router/frontend", exist_ok=True)
     with open("semantic-router/frontend/index.html", "w") as f:
         f.write("<html></html>")
@@ -293,15 +287,8 @@ def test_frontend_route():
     assert "text/html" in response.headers["content-type"]
 
 
-def test_query_route():
-    # Setup: Create an LLM and set as default
-    llm_id = client.post(
-        "/api/llm", json={"name": "Test LLM", "url": "http://test.ai/v1"}
-    ).json()["id"]
-    client.put("/api/config", json={"default_llm": llm_id})
-
-    # Mock the LLM response
-    mock_resp = {
+def get_mock_llm_response(content="Mocked response"):
+    return {
         "id": "chatcmpl-123",
         "object": "chat.completion",
         "created": 123456789,
@@ -309,16 +296,24 @@ def test_query_route():
         "choices": [
             {
                 "index": 0,
-                "message": {"role": "assistant", "content": "Mocked response"},
+                "message": {"role": "assistant", "content": content},
                 "finish_reason": "stop",
             }
         ],
         "usage": {"prompt_tokens": 5, "completion_tokens": 5, "total_tokens": 10},
     }
 
+
+def test_query_route():
+    # Setup: Create an LLM and set as default
+    llm_id = client.post(
+        "/api/llm", json={"name": "Test LLM", "url": "http://test.ai/v1"}
+    ).json()["id"]
+    client.put("/api/config", json={"default_llm": llm_id})
+
     with patch("httpx.AsyncClient.post") as mock_post:
         mock_post.return_value = MagicMock()
-        mock_post.return_value.json.return_value = mock_resp
+        mock_post.return_value.json.return_value = get_mock_llm_response()
         mock_post.return_value.status_code = 200
         mock_post.return_value.raise_for_status = MagicMock()
 
@@ -334,6 +329,211 @@ def test_query_route():
         assert data["choices"][0]["message"]["content"] == "Mocked response"
         assert "route" in data
         assert "llm" in data
+
+
+def test_query_route_match_db():
+    # Setup LLM and Route
+    llm_id = client.post("/api/llm", json={"name": "T", "url": "U"}).json()["id"]
+    client.post("/api/route", json={"name": "test_route", "llm": llm_id})
+    client.put("/api/config", json={"default_llm": llm_id})
+
+    with (
+        patch(
+            "backend.router_manager.router_manager.get_route_name",
+            return_value="test_route",
+        ),
+        patch("httpx.AsyncClient.post") as mock_post,
+    ):
+        mock_post.return_value = MagicMock(status_code=200)
+        mock_post.return_value.json.return_value = get_mock_llm_response("ok")
+
+        response = client.post(
+            "/query",
+            json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
+        )
+        assert response.status_code == 200
+        assert response.json()["route"] == "test_route"
+
+
+def test_query_route_no_llm_error():
+    # Setup config with no default LLM
+    client.put("/api/config", json={"default_llm": None})
+
+    with patch(
+        "backend.router_manager.router_manager.get_route_name", return_value=None
+    ):
+        response = client.post(
+            "/query",
+            json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
+        )
+        assert response.status_code == 500
+        assert "No LLM configured" in response.text
+
+
+def test_query_route_fallback_logic():
+    # Setup two LLMs: Target and Fallback
+    target_id = client.post(
+        "/api/llm", json={"name": "Target", "url": "http://target"}
+    ).json()["id"]
+    fallback_id = client.post(
+        "/api/llm", json={"name": "Fallback", "url": "http://fallback"}
+    ).json()["id"]
+
+    client.post("/api/route", json={"name": "test_route", "llm": target_id})
+    client.put("/api/config", json={"default_llm": fallback_id})
+
+    with (
+        patch(
+            "backend.router_manager.router_manager.get_route_name",
+            return_value="test_route",
+        ),
+        patch("httpx.AsyncClient.post") as mock_post,
+    ):
+        # First call fails, second succeeds
+        target_resp = MagicMock(status_code=500)
+        target_resp.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Err", request=MagicMock(), response=target_resp
+        )
+
+        fallback_resp = MagicMock(status_code=200)
+        fallback_resp.json.return_value = get_mock_llm_response("fallback success")
+
+        mock_post.side_effect = [target_resp, fallback_resp]
+
+        response = client.post(
+            "/query",
+            json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
+        )
+        assert response.status_code == 200
+        assert "fallback success" in response.text
+        assert response.json()["route"] == "test_route (fallback)"
+
+
+def test_query_route_both_fail():
+    target_id = client.post("/api/llm", json={"name": "T", "url": "U"}).json()["id"]
+    client.put("/api/config", json={"default_llm": target_id})
+
+    with (
+        patch(
+            "backend.router_manager.router_manager.get_route_name", return_value=None
+        ),
+        patch("httpx.AsyncClient.post") as mock_post,
+    ):
+        resp = MagicMock(status_code=500)
+        resp.raise_for_status.side_effect = Exception("Failure")
+        mock_post.return_value = resp
+
+        response = client.post(
+            "/query",
+            json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
+        )
+        assert response.status_code == 502
+
+
+def test_query_route_target_is_fallback_fail():
+    target_id = client.post("/api/llm", json={"name": "T", "url": "U"}).json()["id"]
+    client.put("/api/config", json={"default_llm": target_id})
+
+    with (
+        patch(
+            "backend.router_manager.router_manager.get_route_name", return_value=None
+        ),
+        patch("httpx.AsyncClient.post") as mock_post,
+    ):
+        resp = MagicMock(status_code=400)
+        err_data = get_mock_llm_response("error from llm")
+        resp.json.return_value = err_data
+        resp.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Err", request=MagicMock(), response=resp
+        )
+        mock_post.return_value = resp
+
+        response = client.post(
+            "/query",
+            json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
+        )
+        assert response.status_code == 200
+        assert response.json()["choices"][0]["message"]["content"] == "error from llm"
+
+
+def test_query_route_target_fail_no_fallback():
+    llm_id = client.post("/api/llm", json={"name": "T", "url": "U"}).json()["id"]
+    client.post("/api/route", json={"name": "test", "llm": llm_id})
+    client.put("/api/config", json={"default_llm": None})
+
+    with (
+        patch(
+            "backend.router_manager.router_manager.get_route_name", return_value="test"
+        ),
+        patch("httpx.AsyncClient.post") as mock_post,
+    ):
+        resp = MagicMock(status_code=500)
+        resp.raise_for_status.side_effect = Exception("Fail")
+        mock_post.return_value = resp
+
+        response = client.post(
+            "/query",
+            json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
+        )
+        assert response.status_code == 502
+        assert "no fallback configured" in response.text.lower()
+
+
+def test_query_route_both_target_and_fallback_fail():
+    target_id = client.post(
+        "/api/llm", json={"name": "Target", "url": "http://target"}
+    ).json()["id"]
+    fallback_id = client.post(
+        "/api/llm", json={"name": "Fallback", "url": "http://fallback"}
+    ).json()["id"]
+
+    client.post("/api/route", json={"name": "test_route", "llm": target_id})
+    client.put("/api/config", json={"default_llm": fallback_id})
+
+    with (
+        patch(
+            "backend.router_manager.router_manager.get_route_name",
+            return_value="test_route",
+        ),
+        patch("httpx.AsyncClient.post") as mock_post,
+    ):
+        # Both calls fail
+        resp = MagicMock(status_code=500)
+        resp.raise_for_status.side_effect = Exception("Total failure")
+        mock_post.return_value = resp
+
+        response = client.post(
+            "/query",
+            json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
+        )
+        assert response.status_code == 502
+        assert "both target and fallback" in response.text.lower()
+
+
+def test_query_route_llm_overrides():
+    llm_id = client.post(
+        "/api/llm", json={"name": "O", "url": "http://o", "secret": "s", "model": "m"}
+    ).json()["id"]
+    client.put("/api/config", json={"default_llm": llm_id})
+
+    with (
+        patch(
+            "backend.router_manager.router_manager.get_route_name", return_value=None
+        ),
+        patch("httpx.AsyncClient.post") as mock_post,
+    ):
+        mock_post.return_value = MagicMock(status_code=200)
+        mock_post.return_value.json.return_value = get_mock_llm_response("ok")
+
+        client.post(
+            "/query",
+            json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
+        )
+
+        # Verify call arguments (secret and model)
+        args, kwargs = mock_post.call_args
+        assert kwargs["headers"]["Authorization"] == "Bearer s"
+        assert kwargs["json"]["model"] == "m"
 
 
 def test_llm_create_secret_validation():

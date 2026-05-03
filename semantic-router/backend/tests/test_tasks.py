@@ -87,3 +87,22 @@ def test_cleanup_old_logs_logic(db_session):
     remaining = db_session.query(models.Log).all()
     assert len(remaining) == 1
     assert remaining[0].id == "new-log"
+
+
+def test_log_cleanup_task_exception():
+    mock_session_local = MagicMock(side_effect=Exception("DB Failure"))
+
+    async def run_test():
+        with (
+            patch("backend.tasks.SessionLocal", mock_session_local),
+            patch("backend.tasks.asyncio.sleep", side_effect=asyncio.CancelledError),
+        ):
+            try:
+                await log_cleanup_task()
+            except asyncio.CancelledError:
+                pass
+
+            # Verify it reached the except block
+            mock_session_local.assert_called()
+
+    asyncio.run(run_test())
