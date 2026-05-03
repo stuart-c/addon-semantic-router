@@ -1,16 +1,17 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.19
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:bookworm
  
 # Stage 1: Build dependencies
 FROM $BUILD_FROM AS builder
 
 # Install build dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
-    py3-pip \
-    build-base \
-    libffi-dev \
+    python3-pip \
+    python3-venv \
     python3-dev \
-    libstdc++
+    build-essential \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -22,8 +23,6 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY backend/requirements.txt .
 RUN pip install --upgrade pip setuptools wheel && \
     pip install --no-cache-dir \
-        --index-url https://wheels.home-assistant.io/musllinux-index/ \
-        --extra-index-url https://pypi.org/simple \
         -r requirements.txt
 
 # Stage 2: Final image
@@ -38,7 +37,9 @@ ENV LANG=C.UTF-8 \
 WORKDIR /app
 
 # Install Python 3 and runtime dependencies
-RUN apk add --no-cache python3 libstdc++
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
