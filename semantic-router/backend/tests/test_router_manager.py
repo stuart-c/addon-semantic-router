@@ -7,7 +7,9 @@ from backend.models import Base, Route, RouteUtterance
 import os
 
 # Setup test DB
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_router_manager.db"
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL", "sqlite:///./test_router_manager.db"
+)
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
@@ -36,17 +38,10 @@ def manager():
     return RouteLayerManager()
 
 
-def test_router_manager_not_available(db, manager):
-    with patch("backend.router_manager.SEMANTIC_ROUTER_AVAILABLE", False):
-        manager.initialize(db)
-        assert manager.get_router() is None
-
-
 def test_router_manager_initialize_fastembed(db, manager):
     with (
-        patch("backend.router_manager.SEMANTIC_ROUTER_AVAILABLE", True),
         patch("backend.router_manager.FastEmbedEncoder") as mock_fe,
-        patch("backend.router_manager.RouteLayer") as mock_layer,
+        patch("backend.router_manager.SemanticRouter") as mock_layer,
         patch("backend.router_manager.Route"),
     ):
         # Create a route in DB
@@ -67,10 +62,7 @@ def test_router_manager_initialize_fastembed(db, manager):
 
 
 def test_router_manager_no_routes(db, manager):
-    with (
-        patch("backend.router_manager.SEMANTIC_ROUTER_AVAILABLE", True),
-        patch("backend.router_manager.FastEmbedEncoder"),
-    ):
+    with (patch("backend.router_manager.FastEmbedEncoder"),):
         # No routes in DB
         manager.initialize(db)
         assert manager.get_router() is None
@@ -98,7 +90,6 @@ def test_router_manager_get_route_name(db, manager):
 
 def test_router_manager_initialize_exception(db, manager):
     with (
-        patch("backend.router_manager.SEMANTIC_ROUTER_AVAILABLE", True),
         patch(
             "backend.router_manager.FastEmbedEncoder",
             side_effect=Exception("Critical error"),

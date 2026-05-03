@@ -3,25 +3,9 @@ import os
 from typing import Optional
 from sqlalchemy.orm import Session
 
-try:
-    from semantic_router import Route
-    from semantic_router.layer import RouteLayer
-    from semantic_router.encoders import FastEmbedEncoder
-
-    SEMANTIC_ROUTER_AVAILABLE = True
-except ImportError:
-    SEMANTIC_ROUTER_AVAILABLE = False
-
-    # Mock classes for type hinting or safety
-    class Route:
-        pass
-
-    class RouteLayer:
-        pass
-
-    class FastEmbedEncoder:
-        def __init__(self, *args, **kwargs):
-            pass
+from semantic_router import Route
+from semantic_router.routers import SemanticRouter
+from semantic_router.encoders import FastEmbedEncoder
 
 
 from . import models
@@ -31,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class RouteLayerManager:
     _instance: Optional["RouteLayerManager"] = None
-    _router: Optional[RouteLayer] = None
+    _router: Optional[SemanticRouter] = None
     _encoder: Optional[any] = None
 
     def __new__(cls):
@@ -41,10 +25,6 @@ class RouteLayerManager:
 
     def initialize(self, db: Session):
         """Initialize the RouteLayer with data from the database."""
-        if not SEMANTIC_ROUTER_AVAILABLE:
-            logger.warning("semantic-router library not found. Routing is disabled.")
-            return
-
         logger.info("Initializing Semantic Router Layer...")
         try:
             if self._encoder is None:
@@ -78,8 +58,12 @@ class RouteLayerManager:
                     )
 
             if router_routes:
-                self._router = RouteLayer(encoder=self._encoder, routes=router_routes)
-                logger.info(f"RouteLayer initialized with {len(router_routes)} routes.")
+                self._router = SemanticRouter(
+                    encoder=self._encoder, routes=router_routes
+                )
+                logger.info(
+                    f"SemanticRouter initialized with {len(router_routes)} routes."
+                )
             else:
                 self._router = None
                 logger.warning("No routes found in database. RouteLayer is disabled.")
@@ -92,8 +76,8 @@ class RouteLayerManager:
         """Refresh the RouteLayer with latest data from the database."""
         self.initialize(db)
 
-    def get_router(self) -> Optional[RouteLayer]:
-        """Return the current RouteLayer instance."""
+    def get_router(self) -> Optional[SemanticRouter]:
+        """Return the current SemanticRouter instance."""
         return self._router
 
     def get_route_name(self, query_text: str) -> Optional[str]:
