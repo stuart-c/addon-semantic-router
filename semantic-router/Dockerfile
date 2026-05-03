@@ -1,24 +1,21 @@
 ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
-
+ 
 # Stage 1: Build dependencies
 FROM $BUILD_FROM AS builder
 
 # Install build dependencies
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.19/main" >> /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.19/community" >> /etc/apk/repositories && \
-    apk update && \
-    apk add --no-cache \
-    python3.11 \
-    py3.11-pip \
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
     build-base \
     libffi-dev \
-    python3.11-dev \
+    python3-dev \
     libstdc++
 
 WORKDIR /build
 
-# Set up virtual environment
-RUN python3.11 -m venv /opt/venv
+# Create virtual environment
+RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy requirements and install
@@ -34,38 +31,26 @@ FROM $BUILD_FROM
 
 # Set environment variables
 ENV LANG=C.UTF-8 \
-    PYTHONPATH="/app" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
 
-# Install Python 3.11
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.19/main" >> /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.19/community" >> /etc/apk/repositories && \
-    apk update && \
-    apk add --no-cache python3.11 libstdc++
+# Install Python 3 and runtime dependencies
+RUN apk add --no-cache python3 libstdc++
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 
 # Copy application code
-COPY backend/ /app/backend/
-COPY frontend/ /app/frontend/
-COPY config.yaml /app/config.yaml
+COPY . .
 
-# Copy run script
-COPY run.sh /app/run.sh
-RUN chmod a+x /app/run.sh
+# Ensure run.sh is executable
+RUN chmod a+x run.sh
 
-# Home Assistant Add-on labels
-LABEL \
-    io.hass.name="Semantic Router" \
-    io.hass.description="A semantic router for LLM applications" \
-    io.hass.arch="amd64|aarch64" \
-    io.hass.type="addon"
-
-# Expose the API port
+# Expose port
 EXPOSE 8000
 
-# Set the command to run the application
-CMD ["/app/run.sh"]
+# Start application
+CMD [ "./run.sh" ]
