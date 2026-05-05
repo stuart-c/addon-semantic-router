@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import './log-viewer';
 
 @customElement('semantic-router-app')
 export class SemanticRouterApp extends LitElement {
@@ -73,10 +74,13 @@ export class SemanticRouterApp extends LitElement {
     .content-area {
       background-color: var(--surface-color);
       border-radius: var(--border-radius);
-      padding: 2rem;
       min-height: 400px;
+      height: calc(100vh - 180px); /* Adjust based on header/nav height */
       border: 1px solid rgba(255, 255, 255, 0.05);
       animation: fadeIn 0.4s ease-out;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     @keyframes fadeIn {
@@ -139,12 +143,7 @@ export class SemanticRouterApp extends LitElement {
   private _renderTabContent() {
     switch (this.activeTab) {
       case 'logs':
-        return html`
-          <div class="empty-state">
-            <h2>Logs</h2>
-            <p>Real-time logs will appear here.</p>
-          </div>
-        `;
+        return html`<log-viewer></log-viewer>`;
       case 'routes':
         return html`
           <div class="empty-state">
