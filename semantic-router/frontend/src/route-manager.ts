@@ -3,7 +3,6 @@ import { customElement, state } from 'lit/decorators.js';
 import { sharedStyles } from './shared-styles';
 import './components/sr-button';
 import './components/sr-badge';
-import './components/sr-modal';
 import './components/sr-form-group';
 import './components/sr-list-item';
 import './components/sr-empty-state';
@@ -36,10 +35,13 @@ export class RouteManager extends LitElement {
   @state() private llms: LLM[] = [];
   @state() private selectedRouteId: number | null = null;
   @state() private loading = true;
+  @state() private error: string | null = null;
+  @state() private confirmingDelete = false;
+  @state() private newUtterance = '';
 
 
   // New Route Form State
-  @state() private showAddRouteModal = false;
+  @state() private isAdding = false;
   @state() private newRouteName = '';
   @state() private newRouteLlmId: number | null = null;
 
@@ -82,6 +84,20 @@ export class RouteManager extends LitElement {
         font-size: 0.9375rem;
         color: var(--text-color);
       }
+
+      .error-banner {
+        background-color: hsla(0, 84%, 60%, 0.1);
+        color: hsl(0, 84%, 60%);
+        padding: 1rem 1.5rem;
+        border-radius: var(--border-radius-sm);
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border: 1px solid hsla(0, 84%, 60%, 0.2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
     `
   ];
 
@@ -92,6 +108,7 @@ export class RouteManager extends LitElement {
 
   async fetchInitialData() {
     this.loading = true;
+    this.error = null;
     try {
       const [routesRes, llmsRes] = await Promise.all([
         fetch('/api/route'),
@@ -103,19 +120,19 @@ export class RouteManager extends LitElement {
       this.routes = await routesRes.json();
       this.llms = await llmsRes.json();
 
-      if (this.routes.length > 0 && this.selectedRouteId === null) {
+      if (this.routes.length > 0 && this.selectedRouteId === null && !this.isAdding) {
         this.selectedRouteId = this.routes[0].id;
       }
     } catch (err) {
-      console.error(err);
+      this.error = (err as Error).message;
     } finally {
-
       this.loading = false;
     }
   }
 
   async addRoute() {
     if (!this.newRouteName || this.newRouteLlmId === null) return;
+    this.error = null;
 
     try {
       const res = await fetch('/api/route', {
@@ -128,37 +145,51 @@ export class RouteManager extends LitElement {
         })
       });
 
-      if (!res.ok) throw new Error('Failed to create route');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Failed to create route');
+      }
 
       const newRoute = await res.json();
       this.routes = [...this.routes, { ...newRoute, utterances: [] }];
       this.selectedRouteId = newRoute.id;
-      this.showAddRouteModal = false;
+      this.isAdding = false;
       this.newRouteName = '';
       this.newRouteLlmId = null;
     } catch (err) {
-      alert((err as Error).message);
+      this.error = (err as Error).message;
     }
   }
 
   async deleteRoute(id: number) {
-    if (!confirm('Are you sure you want to delete this route?')) return;
+    if (!this.confirmingDelete) {
+      this.confirmingDelete = true;
+      setTimeout(() => { this.confirmingDelete = false; }, 3000);
+      return;
+    }
 
+    this.error = null;
     try {
       const res = await fetch(`/api/route/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete route');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Failed to delete route');
+      }
 
       this.routes = this.routes.filter(r => r.id !== id);
+      this.confirmingDelete = false;
       if (this.selectedRouteId === id) {
         this.selectedRouteId = this.routes.length > 0 ? this.routes[0].id : null;
       }
     } catch (err) {
-      alert((err as Error).message);
+      this.error = (err as Error).message;
+      this.confirmingDelete = false;
     }
   }
 
   async updateRouteConfig(updates: Partial<Route>) {
     if (!this.selectedRouteId) return;
+    this.error = null;
 
     try {
       const res = await fetch(`/api/route/${this.selectedRouteId}`, {
@@ -167,27 +198,33 @@ export class RouteManager extends LitElement {
         body: JSON.stringify(updates)
       });
 
-      if (!res.ok) throw new Error('Failed to update route');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Failed to update route');
+      }
 
       const updated = await res.json();
       this.routes = this.routes.map(r => r.id === updated.id ? { ...r, ...updated } : r);
     } catch (err) {
-      alert((err as Error).message);
+      this.error = (err as Error).message;
     }
   }
 
   async addUtterance(routeId: number) {
-    const utterance = prompt('Enter new utterance:');
-    if (!utterance) return;
+    if (!this.newUtterance) return;
+    this.error = null;
 
     try {
       const res = await fetch(`/api/route/${routeId}/utterance`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ utterance })
+        body: JSON.stringify({ utterance: this.newUtterance })
       });
 
-      if (!res.ok) throw new Error('Failed to add utterance');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Failed to add utterance');
+      }
 
       const newUtt = await res.json();
       this.routes = this.routes.map(r => 
@@ -195,18 +232,23 @@ export class RouteManager extends LitElement {
           ? { ...r, utterances: [...r.utterances, newUtt] } 
           : r
       );
+      this.newUtterance = '';
     } catch (err) {
-      alert((err as Error).message);
+      this.error = (err as Error).message;
     }
   }
 
   async deleteUtterance(routeId: number, uttId: number) {
+    this.error = null;
     try {
       const res = await fetch(`/api/route/${routeId}/utterance/${uttId}`, {
         method: 'DELETE'
       });
 
-      if (!res.ok) throw new Error('Failed to delete utterance');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Failed to delete utterance');
+      }
 
       this.routes = this.routes.map(r => 
         r.id === routeId 
@@ -214,11 +256,12 @@ export class RouteManager extends LitElement {
           : r
       );
     } catch (err) {
-      alert((err as Error).message);
+      this.error = (err as Error).message;
     }
   }
 
   async updateUtterance(routeId: number, uttId: number, utterance: string) {
+    this.error = null;
     try {
       const res = await fetch(`/api/route/${routeId}/utterance/${uttId}`, {
         method: 'PUT',
@@ -226,7 +269,10 @@ export class RouteManager extends LitElement {
         body: JSON.stringify({ utterance })
       });
 
-      if (!res.ok) throw new Error('Failed to update utterance');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Failed to update utterance');
+      }
 
       const updated = await res.json();
       this.routes = this.routes.map(r => 
@@ -235,7 +281,28 @@ export class RouteManager extends LitElement {
           : r
       );
     } catch (err) {
-      alert((err as Error).message);
+      this.error = (err as Error).message;
+    }
+  }
+
+  private _handleSelectRoute(id: number) {
+    this.selectedRouteId = id;
+    this.isAdding = false;
+    this.error = null;
+    this.confirmingDelete = false;
+  }
+
+  private _handleStartAdding() {
+    this.isAdding = true;
+    this.selectedRouteId = null;
+    this.error = null;
+  }
+
+  private _handleCancelAdding() {
+    this.isAdding = false;
+    this.error = null;
+    if (this.routes.length > 0) {
+      this.selectedRouteId = this.routes[0].id;
     }
   }
 
@@ -249,20 +316,22 @@ export class RouteManager extends LitElement {
     return html`
       <div class="sidebar">
         <div class="sidebar-header">
-          <h2>Routes</h2>
-          <sr-button variant="ghost" iconOnly @click="${() => this.showAddRouteModal = true}" title="Add Route">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          </sr-button>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Routes</h2>
+            <sr-button variant="ghost" iconOnly @click="${this._handleStartAdding}" title="Add Route">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </sr-button>
+          </div>
         </div>
         <div class="route-list">
           ${this.routes.map(route => html`
             <sr-list-item 
               .selected="${this.selectedRouteId === route.id}"
               .title="${route.name}"
-              @click="${() => this.selectedRouteId = route.id}"
+              @click="${() => this._handleSelectRoute(route.id)}"
             >
               <sr-badge slot="suffix" variant="${route.enabled ? 'enabled' : 'disabled'}">
                 ${route.enabled ? 'On' : 'Off'}
@@ -273,14 +342,70 @@ export class RouteManager extends LitElement {
       </div>
 
       <div class="main-content">
-        ${selectedRoute ? html`
+        ${this.error ? html`
+          <div style="padding: 2.5rem 2.5rem 0 2.5rem; max-width: 900px; margin: 0 auto; width: 100%;">
+            <div class="error-banner">
+              <span>${this.error}</span>
+              <sr-button variant="ghost" iconOnly @click="${() => this.error = null}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </sr-button>
+            </div>
+          </div>
+        ` : ''}
+
+        ${this.isAdding ? html`
+          <div class="detail-header">
+            <div>
+              <h2>Create New Route</h2>
+              <span style="font-size: 0.8125rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Configure a new routing path</span>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+              <sr-button variant="ghost" @click="${this._handleCancelAdding}">Cancel</sr-button>
+              <sr-button 
+                ?disabled="${!this.newRouteName || this.newRouteLlmId === null}"
+                @click="${this.addRoute}"
+              >
+                Create Route
+              </sr-button>
+            </div>
+          </div>
+          <div class="detail-body">
+            <div class="section fade-in">
+              <h3>General Configuration</h3>
+              <sr-form-group label="Route Name">
+                <input 
+                  type="text" 
+                  placeholder="e.g. Greeting, Technical Support"
+                  .value="${this.newRouteName}"
+                  @input="${(e: any) => this.newRouteName = e.target.value}"
+                >
+              </sr-form-group>
+              <sr-form-group label="Assign LLM">
+                <select 
+                  @change="${(e: any) => this.newRouteLlmId = parseInt(e.target.value)}"
+                >
+                  <option value="" disabled ?selected="${this.newRouteLlmId === null}">Select an LLM</option>
+                  ${this.llms.map(llm => html`
+                    <option value="${llm.id}">${llm.name}</option>
+                  `)}
+                </select>
+              </sr-form-group>
+            </div>
+          </div>
+        ` : selectedRoute ? html`
           <div class="detail-header">
             <div>
               <h2>${selectedRoute.name}</h2>
               <span style="font-size: 0.8125rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Route ID: ${selectedRoute.id}</span>
             </div>
-            <sr-button variant="danger" @click="${() => this.deleteRoute(selectedRoute.id)}">
-              Delete Route
+            <sr-button 
+              variant="${this.confirmingDelete ? 'primary' : 'danger'}" 
+              @click="${() => this.deleteRoute(selectedRoute.id)}"
+            >
+              ${this.confirmingDelete ? 'Click Again to Confirm' : 'Delete Route'}
             </sr-button>
           </div>
 
@@ -321,13 +446,10 @@ export class RouteManager extends LitElement {
             <div class="section">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h3 style="margin:0">Utterances</h3>
-                <sr-button variant="primary" @click="${() => this.addUtterance(selectedRoute.id)}">
-                  + Add Utterance
-                </sr-button>
               </div>
               <div class="utterance-list">
                 ${selectedRoute.utterances.map(utt => html`
-                  <div class="utterance-item">
+                  <div class="utterance-item fade-in">
                     <input 
                       type="text" 
                       class="utterance-input"
@@ -342,8 +464,26 @@ export class RouteManager extends LitElement {
                     </sr-button>
                   </div>
                 `)}
-                ${selectedRoute.utterances.length === 0 ? html`
-                  <div style="text-align: center; padding: 2rem; color: var(--text-secondary); background: transparent; border-radius: 8px;">
+                
+                <div class="utterance-item" style="border-style: dashed; background-color: transparent;">
+                  <input 
+                    type="text" 
+                    class="utterance-input"
+                    placeholder="Type a new utterance and press enter..."
+                    .value="${this.newUtterance}"
+                    @input="${(e: any) => this.newUtterance = e.target.value}"
+                    @keydown="${(e: KeyboardEvent) => e.key === 'Enter' && this.addUtterance(selectedRoute.id)}"
+                  >
+                  <sr-button variant="ghost" iconOnly @click="${() => this.addUtterance(selectedRoute.id)}" ?disabled="${!this.newUtterance}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                  </sr-button>
+                </div>
+
+                ${selectedRoute.utterances.length === 0 && !this.newUtterance ? html`
+                  <div style="text-align: center; padding: 1rem; color: var(--text-tertiary); font-style: italic; font-size: 0.875rem;">
                     No utterances defined for this route.
                   </div>
                 ` : ''}
@@ -359,46 +499,12 @@ export class RouteManager extends LitElement {
               <path d="M9 17l6-5-6-5"></path>
               <circle cx="12" cy="12" r="10"></circle>
             </svg>
-            <sr-button slot="actions" @click="${() => this.showAddRouteModal = true}">
+            <sr-button slot="actions" @click="${this._handleStartAdding}">
               Create First Route
             </sr-button>
           </sr-empty-state>
         `}
       </div>
-
-      <sr-modal 
-        .open="${this.showAddRouteModal}" 
-        title="Add New Route"
-        @close="${() => this.showAddRouteModal = false}"
-      >
-        <sr-form-group label="Route Name">
-          <input 
-            type="text" 
-            placeholder="e.g. Greeting, Technical Support"
-            .value="${this.newRouteName}"
-            @input="${(e: any) => this.newRouteName = e.target.value}"
-          >
-        </sr-form-group>
-        <sr-form-group label="Assign LLM">
-          <select 
-            @change="${(e: any) => this.newRouteLlmId = parseInt(e.target.value)}"
-          >
-            <option value="" disabled ?selected="${this.newRouteLlmId === null}">Select an LLM</option>
-            ${this.llms.map(llm => html`
-              <option value="${llm.id}">${llm.name}</option>
-            `)}
-          </select>
-        </sr-form-group>
-        <div slot="actions">
-          <sr-button variant="ghost" @click="${() => this.showAddRouteModal = false}">Cancel</sr-button>
-          <sr-button 
-            ?disabled="${!this.newRouteName || this.newRouteLlmId === null}"
-            @click="${this.addRoute}"
-          >
-            Create Route
-          </sr-button>
-        </div>
-      </sr-modal>
     `;
   }
 }
