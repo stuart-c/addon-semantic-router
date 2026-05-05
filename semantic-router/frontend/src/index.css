@@ -5,9 +5,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: dark;
-  color: hsla(0, 0%, 100%, 0.9);
-  background-color: hsl(220, 15%, 8%);
+  color-scheme: light dark;
+  color: var(--primary-text-color, hsla(0, 0%, 0%, 0.9));
+  background-color: var(--primary-background-color, #f8f9fa);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -17,32 +17,52 @@
   /* Brand Colors */
   --primary-h: 245;
   --primary-s: 100%;
-  --primary-l: 70%;
-  --primary-color: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+  --primary-l: 60%;
+  --primary-color: var(--accent-color, hsl(var(--primary-h), var(--primary-s), var(--primary-l)));
   --primary-hover: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 10%));
   --primary-active: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 20%));
 
   /* Surface Colors */
-  --bg-color: hsl(220, 15%, 8%);
-  --surface-color: hsl(220, 15%, 12%);
-  --surface-elevated: hsl(220, 15%, 16%);
+  --bg-color: var(--primary-background-color, #f8f9fa);
+  --surface-color: var(--secondary-background-color, #ffffff);
+  --surface-elevated: var(--card-background-color, #ffffff);
   
   /* Text Colors */
-  --text-color: hsla(0, 0%, 100%, 0.95);
-  --text-secondary: hsla(0, 0%, 100%, 0.6);
-  --text-tertiary: hsla(0, 0%, 100%, 0.4);
+  --text-color: var(--primary-text-color, hsla(0, 0%, 0%, 0.95));
+  --text-secondary: var(--secondary-text-color, hsla(0, 0%, 0%, 0.6));
+  --text-tertiary: var(--disabled-text-color, hsla(0, 0%, 0%, 0.4));
 
   /* Border & Depth */
-  --border-color: hsla(0, 0%, 100%, 0.08);
+  --border-color: var(--divider-color, hsla(0, 0%, 0%, 0.08));
   --border-radius: 12px;
   --border-radius-sm: 8px;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
 
   /* Transitions */
   --transition-fast: 0.15s ease;
   --transition-speed: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: var(--primary-text-color, hsla(0, 0%, 100%, 0.9));
+    background-color: var(--primary-background-color, hsl(220, 15%, 12%));
+
+    --bg-color: var(--primary-background-color, hsl(220, 15%, 12%));
+    --surface-color: var(--secondary-background-color, hsl(220, 15%, 16%));
+    --surface-elevated: var(--card-background-color, hsl(220, 15%, 20%));
+
+    --text-color: var(--primary-text-color, hsla(0, 0%, 100%, 0.95));
+    --text-secondary: var(--secondary-text-color, hsla(0, 0%, 100%, 0.6));
+    --text-tertiary: var(--disabled-text-color, hsla(0, 0%, 100%, 0.4));
+
+    --border-color: var(--divider-color, hsla(0, 0%, 100%, 0.08));
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.5);
+  }
 }
 
 body {

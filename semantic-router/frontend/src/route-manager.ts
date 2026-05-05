@@ -343,7 +343,7 @@ export class RouteManager extends LitElement {
                   </div>
                 `)}
                 ${selectedRoute.utterances.length === 0 ? html`
-                  <div style="text-align: center; padding: 2rem; color: var(--text-secondary); background: rgba(255,255,255,0.02); border-radius: 8px;">
+                  <div style="text-align: center; padding: 2rem; color: var(--text-secondary); background: transparent; border-radius: 8px;">
                     No utterances defined for this route.
                   </div>
                 ` : ''}
