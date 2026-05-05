@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { sharedStyles } from '../shared-styles';
 
 interface LLM {
   id: number;
@@ -20,162 +21,83 @@ export class ConfigView extends LitElement {
   @state() private isSaving = false;
   @state() private feedback: { message: string; type: 'success' | 'error' } | null = null;
 
-  static styles = css`
-    :host {
-      display: block;
-      animation: fadeIn 0.4s ease-out;
-    }
+  static styles = [
+    sharedStyles,
+    css`
+      :host {
+        display: block;
+        animation: fadeIn 0.4s ease-out;
+      }
 
-    .config-card {
-      background: var(--surface-color);
-      border-radius: var(--border-radius);
-      padding: 2rem;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      max-width: 600px;
-      margin: 0 auto;
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-    }
+      .config-card {
+        background: var(--surface-color);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      }
 
-    h2 {
-      margin-top: 0;
-      margin-bottom: 1.5rem;
-      font-size: 1.5rem;
-      font-weight: 600;
-      background: linear-gradient(45deg, var(--primary-color), #acb1ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2.5rem;
+      }
 
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
+      .feedback {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        animation: slideIn 0.3s ease-out;
+      }
 
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text-secondary);
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-10px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
 
-    select, input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      background-color: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      color: var(--text-color);
-      font-size: 1rem;
-      transition: all 0.2s ease;
-      font-family: inherit;
-    }
+      .feedback.success {
+        background-color: rgba(76, 175, 80, 0.1);
+        color: #81c784;
+        border: 1px solid rgba(76, 175, 80, 0.2);
+      }
 
-    select:focus, input:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      background-color: rgba(0, 0, 0, 0.3);
-      box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
-    }
+      .feedback.error {
+        background-color: rgba(244, 67, 54, 0.1);
+        color: #e57373;
+        border: 1px solid rgba(244, 67, 54, 0.2);
+      }
 
-    select option {
-      background-color: var(--surface-color);
-      color: var(--text-color);
-    }
+      .loader {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 300px;
+        color: var(--text-secondary);
+        gap: 1rem;
+      }
 
-    .actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 2.5rem;
-    }
+      .spinner {
+        width: 30px;
+        height: 30px;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        border-top-color: var(--primary-color);
+        animation: spin 1s linear infinite;
+      }
 
-    button {
-      padding: 0.75rem 1.5rem;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: none;
-      font-family: inherit;
-      font-size: 0.9rem;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-      color: white;
-      box-shadow: 0 4px 15px -5px rgba(100, 108, 255, 0.4);
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px -5px rgba(100, 108, 255, 0.5);
-    }
-
-    .btn-primary:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .feedback {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      animation: slideIn 0.3s ease-out;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-10px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    .feedback.success {
-      background-color: rgba(76, 175, 80, 0.1);
-      color: #81c784;
-      border: 1px solid rgba(76, 175, 80, 0.2);
-    }
-
-    .feedback.error {
-      background-color: rgba(244, 67, 54, 0.1);
-      color: #e57373;
-      border: 1px solid rgba(244, 67, 54, 0.2);
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .loader {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 300px;
-      color: var(--text-secondary);
-      gap: 1rem;
-    }
-
-    .spinner {
-      width: 30px;
-      height: 30px;
-      border: 3px solid rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      border-top-color: var(--primary-color);
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  `;
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    `
+  ];
 
   async firstUpdated() {
     await this._fetchData();

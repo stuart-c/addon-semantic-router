@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { sharedStyles } from './shared-styles';
 
 interface LLM {
   id: number;
@@ -28,250 +29,45 @@ export class LLMManager extends LitElement {
     enabled: true
   };
 
-  static styles = css`
-    :host {
-      display: flex;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-      color: var(--text-color);
-    }
+  static styles = [
+    sharedStyles,
+    css`
+      .llm-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem;
+      }
 
-    .sidebar {
-      width: 300px;
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      flex-direction: column;
-      background: rgba(255, 255, 255, 0.02);
-    }
+      .llm-item {
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-bottom: 0.25rem;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid transparent;
+      }
 
-    .sidebar-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+      .llm-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
 
-    .sidebar-header h2 {
-      margin: 0;
-      font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-secondary);
-    }
+      .llm-item.selected {
+        background: rgba(100, 108, 255, 0.1);
+        border-color: rgba(100, 108, 255, 0.3);
+        color: var(--primary-color);
+      }
 
-    .llm-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0.5rem;
-    }
-
-    .llm-item {
-      padding: 0.75rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-bottom: 0.25rem;
-      transition: all 0.2s;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid transparent;
-    }
-
-    .llm-item:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .llm-item.selected {
-      background: rgba(100, 108, 255, 0.1);
-      border-color: rgba(100, 108, 255, 0.3);
-      color: var(--primary-color);
-    }
-
-    .llm-name {
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      background: #1e1e1e;
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: var(--text-secondary);
-      opacity: 0.7;
-    }
-
-    .detail-header {
-      padding: 1.5rem 2rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      background: rgba(255, 255, 255, 0.02);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .detail-body {
-      padding: 2rem;
-      max-width: 800px;
-    }
-
-    .section {
-      margin-bottom: 2.5rem;
-    }
-
-    .section h3 {
-      font-size: 1.1rem;
-      margin-bottom: 1rem;
-      color: var(--text-color);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-    }
-
-    input[type="text"], 
-    input[type="number"], 
-    input[type="password"],
-    select {
-      width: 100%;
-      padding: 0.75rem;
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      color: white;
-      font-size: 0.9rem;
-      transition: border-color 0.2s;
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--primary-color);
-    }
-
-    .btn {
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-    }
-
-    .btn-primary {
-      background: var(--primary-color);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--text-secondary);
-    }
-
-    .btn-ghost:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: white;
-    }
-
-    .btn-danger {
-      background: rgba(255, 71, 87, 0.1);
-      color: #ff4757;
-    }
-
-    .btn-danger:hover {
-      background: #ff4757;
-      color: white;
-    }
-
-    .btn-icon {
-      padding: 0.4rem;
-      border-radius: 4px;
-    }
-
-    /* Modal Styles */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .modal {
-      background: var(--surface-color);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      width: 450px;
-      padding: 2rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-    }
-
-    .modal h2 {
-      margin-top: 0;
-      margin-bottom: 1.5rem;
-    }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-
-    .badge {
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .badge-enabled {
-      background: rgba(46, 213, 115, 0.2);
-      color: #2ed573;
-    }
-
-    .badge-disabled {
-      background: rgba(255, 71, 87, 0.2);
-      color: #ff4757;
-    }
-  `;
+      .llm-name {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    `
+  ];
 
   connectedCallback() {
     super.connectedCallback();
