@@ -53,6 +53,7 @@ export class LogViewer extends LitElement {
       width: 100%;
       overflow: hidden;
       color: var(--text-color);
+      background-color: var(--bg-color);
     }
 
     .toolbar {
