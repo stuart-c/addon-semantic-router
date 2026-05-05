@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import './log-viewer';
 import './components/config-view';
+import './semantic-router-test-tab';
 
 @customElement('semantic-router-app')
 export class SemanticRouterApp extends LitElement {
@@ -139,6 +140,13 @@ export class SemanticRouterApp extends LitElement {
         >
           Config
         </div>
+        <div 
+          class="tab ${this.activeTab === 'test' ? 'active' : ''}" 
+          @click="${() => this.activeTab = 'test'}"
+          id="tab-test"
+        >
+          Test
+        </div>
       </nav>
       <main>
         <div class="content-area">
@@ -168,6 +176,8 @@ export class SemanticRouterApp extends LitElement {
         `;
       case 'config':
         return html`<config-view></config-view>`;
+      case 'test':
+        return html`<semantic-router-test-tab></semantic-router-test-tab>`;
       default:
         return html``;
     }
