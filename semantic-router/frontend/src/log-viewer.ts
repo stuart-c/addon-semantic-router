@@ -184,11 +184,11 @@ export class LogViewer extends LitElement {
       background-color: var(--surface-color);
       overflow: auto;
       border-top: 1px solid var(--border-color);
-      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.05);
     }
 
     .detail-content {
-      padding: 2.5rem;
+      padding: 2rem;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
       gap: 2rem;
@@ -229,51 +229,6 @@ export class LogViewer extends LitElement {
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    .split-divider.active {
-      background: var(--primary-color);
-    }
-
-    .detail-view {
-      background: #1a1a1a;
-      overflow: auto;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .detail-content {
-      padding: 1.5rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .detail-card {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 8px;
-      padding: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .detail-card h3 {
-      margin-top: 0;
-      margin-bottom: 0.75rem;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .detail-card pre {
-      margin: 0;
-      white-space: pre-wrap;
-      word-break: break-all;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8125rem;
-      color: #e0e0e0;
-      background: #000;
-      padding: 0.75rem;
-      border-radius: 4px;
     }
   `;
 
