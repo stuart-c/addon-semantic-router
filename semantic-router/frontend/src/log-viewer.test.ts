@@ -1,5 +1,4 @@
 import { expect, test, describe, beforeEach, vi } from 'vitest';
-import { html, render } from 'lit';
 import './log-viewer';
 import { LogViewer } from './log-viewer';
 

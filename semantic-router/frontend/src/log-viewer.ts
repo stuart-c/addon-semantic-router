@@ -1,5 +1,5 @@
-import { LitElement, html, css, PropertyValues } from 'lit';
-import { customElement, state, query } from 'lit/decorators.js';
+import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
 interface LogEntry {
   id: string;
@@ -23,7 +23,6 @@ export class LogViewer extends LitElement {
   @state() private sortColumn: keyof LogEntry = 'timestamp';
   @state() private sortDirection: 'asc' | 'desc' = 'desc';
   @state() private loading = true;
-  @state() private error: string | null = null;
 
   // UI State
   @state() private splitHeight = 300; // Height of bottom area
@@ -255,9 +254,8 @@ export class LogViewer extends LitElement {
       const data = await response.json();
       this.logs = data;
       this.applyFilters();
-      this.error = null;
     } catch (err) {
-      this.error = (err as Error).message;
+      console.error('Failed to fetch logs:', err);
     } finally {
       if (!isSilent) this.loading = false;
     }
