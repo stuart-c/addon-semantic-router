@@ -26,6 +26,7 @@ test('changes tab on click', async () => {
   const activeTab = el.shadowRoot?.querySelector('.tab.active');
   expect(activeTab?.textContent?.trim()).toBe('Routes');
   
-  const heading = el.shadowRoot?.querySelector('.empty-state h2');
-  expect(heading?.textContent).toBe('Routes');
+  const routeManager = el.shadowRoot?.querySelector('route-manager');
+  expect(routeManager).not.toBeNull();
 });
+

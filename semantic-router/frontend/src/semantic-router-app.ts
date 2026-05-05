@@ -3,6 +3,8 @@ import { customElement, state } from 'lit/decorators.js';
 import './log-viewer';
 import './components/config-view';
 import './semantic-router-test-tab';
+import './route-manager';
+
 
 @customElement('semantic-router-app')
 export class SemanticRouterApp extends LitElement {
@@ -161,12 +163,8 @@ export class SemanticRouterApp extends LitElement {
       case 'logs':
         return html`<log-viewer></log-viewer>`;
       case 'routes':
-        return html`
-          <div class="empty-state">
-            <h2>Routes</h2>
-            <p>Configure your semantic routes.</p>
-          </div>
-        `;
+        return html`<route-manager></route-manager>`;
+
       case 'llms':
         return html`
           <div class="empty-state">
