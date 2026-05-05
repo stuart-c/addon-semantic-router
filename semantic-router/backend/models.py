@@ -48,7 +48,9 @@ class Route(Base):
     enabled = Column(Boolean, default=True)
 
     llm_rel = relationship("LLM", back_populates="routes")
-    utterances = relationship("RouteUtterance", back_populates="route_rel")
+    utterances = relationship(
+        "RouteUtterance", back_populates="route_rel", cascade="all, delete-orphan"
+    )
     logs = relationship("Log", back_populates="route_rel")
 
 

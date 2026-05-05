@@ -38,9 +38,6 @@ def override_get_db():
         db.close()
 
 
-app.dependency_overrides[get_db] = override_get_db
-
-
 class ClientProxy:
     def __getattr__(self, name):
         return getattr(current_client, name)
@@ -53,11 +50,13 @@ current_client = None
 @pytest.fixture(autouse=True)
 def setup_database():
     global current_client
+    app.dependency_overrides[get_db] = override_get_db
     Base.metadata.create_all(bind=engine)
     with TestClient(app) as c:
         current_client = c
         yield c
     Base.metadata.drop_all(bind=engine)
+    app.dependency_overrides.pop(get_db, None)
     for ext in ["", "-shm", "-wal"]:
         path = f"./test.db{ext}"
         if os.path.exists(path):

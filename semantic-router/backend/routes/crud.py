@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from .. import schemas, crud
+from ..crud.exceptions import IntegrityViolationError
 from ..database import get_db
 from ..router_manager import router_manager
 
@@ -38,7 +39,10 @@ def update_llm(id: int, llm_in: schemas.LLMUpdate, db: Session = Depends(get_db)
 
 @router.delete("/llm/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_llm(id: int, db: Session = Depends(get_db)):
-    db_llm = crud.llm.remove(db, id=id)
+    try:
+        db_llm = crud.llm.remove(db, id=id)
+    except IntegrityViolationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     if not db_llm:
         raise HTTPException(status_code=404, detail="LLM not found")
     return None
