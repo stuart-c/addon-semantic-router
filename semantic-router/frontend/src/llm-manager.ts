@@ -304,7 +304,6 @@ export class LLMManager extends LitElement {
         </div>
       </sr-modal>
     `;
-    `;
   }
 }
 

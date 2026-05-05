@@ -392,7 +392,6 @@ export class RouteManager extends LitElement {
         </div>
       </sr-modal>
     `;
-    `;
   }
 }
 
