@@ -1,5 +1,7 @@
 import asyncio
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+import os
 from contextlib import asynccontextmanager
 from . import models, routes, logging_utils, utils
 from .database import engine, SessionLocal
@@ -49,3 +51,14 @@ app.include_router(routes.crud.router, prefix="/api")
 app.include_router(routes.query.router)
 
 app.include_router(routes.frontend.router)
+
+# Mount static files if dist directory exists
+frontend_dist = os.path.join(os.path.dirname(__file__), "../frontend/dist")
+if os.path.exists(frontend_dist):
+    app.mount(
+        "/assets",
+        StaticFiles(directory=os.path.join(frontend_dist, "assets")),
+        name="assets",
+    )
+    # Also mount root files like favicon.ico, etc if they exist in dist
+    app.mount("/static", StaticFiles(directory=frontend_dist), name="static")
