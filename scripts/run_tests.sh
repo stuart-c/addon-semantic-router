@@ -16,9 +16,12 @@ echo "Running unit tests (pytest)..."
 export PYTHONPATH=$PYTHONPATH:$(pwd)/semantic-router
 ./.venv/bin/pytest semantic-router/backend/tests
 
-echo "Running frontend unit tests (vitest)..."
+echo "Running frontend type checking (tsc)..."
 source .venv/bin/activate
 cd semantic-router/frontend
+npm run type-check
+
+echo "Running frontend unit tests (vitest)..."
 npm run test
 cd ../..
 
