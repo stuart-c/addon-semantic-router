@@ -177,8 +177,8 @@ export class LLMManager extends LitElement {
         ${selectedLlm ? html`
           <div class="detail-header">
             <div>
-              <h1 style="margin:0; font-size: 1.5rem;">${selectedLlm.name}</h1>
-              <span style="font-size: 0.875rem; color: var(--text-secondary)">LLM ID: ${selectedLlm.id}</span>
+              <h2>${selectedLlm.name}</h2>
+              <span style="font-size: 0.8125rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">LLM ID: ${selectedLlm.id}</span>
             </div>
             <sr-button variant="danger" @click="${() => this.deleteLlm(selectedLlm.id)}">
               Delete LLM

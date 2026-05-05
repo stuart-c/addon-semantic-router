@@ -10,52 +10,59 @@ export class SRListItem extends LitElement {
   static styles = css`
     :host {
       display: block;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.375rem;
     }
 
     .item {
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      border-radius: var(--border-radius-sm);
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: var(--transition-speed);
       display: flex;
       justify-content: space-between;
       align-items: center;
       border: 1px solid transparent;
-      background: transparent;
+      background-color: transparent;
+      user-select: none;
     }
 
     .item:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background-color: var(--surface-color);
+      border-color: var(--border-color);
     }
 
     .item.selected {
-      background: rgba(100, 108, 255, 0.1);
-      border-color: rgba(100, 108, 255, 0.3);
-      color: var(--primary-color, #646cff);
+      background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
+      border-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3);
+      color: var(--primary-color);
     }
 
     .content {
       display: flex;
       flex-direction: column;
-      gap: 0.125rem;
+      gap: 0.25rem;
       overflow: hidden;
     }
 
     .title {
-      font-weight: 500;
+      font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: 0.9375rem;
+      color: var(--text-color);
     }
 
     .subtitle {
-      font-size: 0.75rem;
-      color: var(--text-secondary, #a0a0a0);
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .item.selected .subtitle {
+      color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.7);
     }
   `;
 

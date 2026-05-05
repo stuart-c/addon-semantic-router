@@ -30,48 +30,48 @@ export class ConfigView extends LitElement {
       }
 
       .config-card {
-        background: var(--surface-color);
+        background-color: var(--surface-color);
         border-radius: var(--border-radius);
-        padding: 2rem;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        max-width: 600px;
-        margin: 0 auto;
-        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        padding: 2.5rem;
+        border: 1px solid var(--border-color);
+        max-width: 640px;
+        margin: 2rem auto;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .config-card h2 {
+        margin-bottom: 2rem;
       }
 
       .actions {
         display: flex;
         justify-content: flex-end;
         gap: 1rem;
-        margin-top: 2.5rem;
+        margin-top: 3rem;
       }
 
       .feedback {
-        margin-top: 1.5rem;
-        padding: 1rem;
-        border-radius: 6px;
-        font-size: 0.9rem;
+        margin-top: 2rem;
+        padding: 1rem 1.25rem;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.9375rem;
+        font-weight: 500;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        animation: slideIn 0.3s ease-out;
-      }
-
-      @keyframes slideIn {
-        from { opacity: 0; transform: translateX(-10px); }
-        to { opacity: 1; transform: translateX(0); }
+        gap: 0.75rem;
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .feedback.success {
-        background-color: rgba(76, 175, 80, 0.1);
-        color: #81c784;
-        border: 1px solid rgba(76, 175, 80, 0.2);
+        background-color: hsla(145, 63%, 42%, 0.1);
+        color: hsl(145, 63%, 62%);
+        border: 1px solid hsla(145, 63%, 42%, 0.2);
       }
 
       .feedback.error {
-        background-color: rgba(244, 67, 54, 0.1);
-        color: #e57373;
-        border: 1px solid rgba(244, 67, 54, 0.2);
+        background-color: hsla(0, 84%, 60%, 0.1);
+        color: hsl(0, 84%, 60%);
+        border: 1px solid hsla(0, 84%, 60%, 0.2);
       }
 
       .loader {
@@ -79,18 +79,18 @@ export class ConfigView extends LitElement {
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        height: 300px;
+        height: 400px;
         color: var(--text-secondary);
-        gap: 1rem;
+        gap: 1.5rem;
       }
 
       .spinner {
-        width: 30px;
-        height: 30px;
-        border: 3px solid rgba(255, 255, 255, 0.1);
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--border-color);
         border-radius: 50%;
         border-top-color: var(--primary-color);
-        animation: spin 1s linear infinite;
+        animation: spin 0.8s linear infinite;
       }
 
       @keyframes spin {

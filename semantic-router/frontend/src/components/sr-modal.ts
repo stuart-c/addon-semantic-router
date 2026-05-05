@@ -13,15 +13,14 @@ export class SRModal extends LitElement {
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(8px);
+      background-color: rgba(0, 0, 0, 0.85);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.3s ease;
+      transition: opacity var(--transition-speed);
     }
 
     .modal-overlay.open {
@@ -30,23 +29,25 @@ export class SRModal extends LitElement {
     }
 
     .modal {
-      background: #2a2a2a;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
+      background-color: var(--surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
       width: 100%;
       max-width: 500px;
-      padding: 2rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      transform: translateY(20px);
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: 2.5rem;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(24px);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+      opacity: 0;
     }
 
     .modal-overlay.open .modal {
       transform: translateY(0);
+      opacity: 1;
     }
 
     .modal-header {
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -55,8 +56,9 @@ export class SRModal extends LitElement {
     .modal-header h2 {
       margin: 0;
       font-size: 1.5rem;
-      font-weight: 600;
-      background: linear-gradient(45deg, var(--primary-color, #646cff), #acb1ff);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--text-color) 0%, var(--text-secondary) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -65,25 +67,25 @@ export class SRModal extends LitElement {
       display: flex;
       justify-content: flex-end;
       gap: 1rem;
-      margin-top: 2rem;
+      margin-top: 2.5rem;
     }
 
     .close-btn {
       background: transparent;
       border: none;
-      color: var(--text-secondary, #a0a0a0);
+      color: var(--text-secondary);
       cursor: pointer;
       padding: 0.5rem;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s;
+      transition: var(--transition-fast);
     }
 
     .close-btn:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: white;
+      background-color: var(--border-color);
+      color: var(--text-color);
     }
   `;
 

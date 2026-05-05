@@ -14,68 +14,74 @@ export class SRButton extends LitElement {
     }
 
     button {
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      border: none;
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--border-radius-sm);
+      border: 1px solid transparent;
       cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
+      font-weight: 600;
+      font-size: 0.875rem;
+      font-family: inherit;
+      transition: var(--transition-speed);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      font-family: inherit;
+      gap: 0.625rem;
+      user-select: none;
       width: 100%;
     }
 
     button.icon-only {
-      padding: 0.4rem;
+      padding: 0.625rem;
       width: auto;
     }
 
     /* Primary Variant */
     button.primary {
-      background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
       background-color: var(--primary-color);
-      color: white;
-      box-shadow: 0 4px 15px -5px rgba(100, 108, 255, 0.4);
+      color: var(--bg-color);
+      border-color: var(--primary-color);
     }
 
     button.primary:hover:not(:disabled) {
-      background: var(--primary-hover);
+      background-color: var(--primary-hover);
+      border-color: var(--primary-hover);
       transform: translateY(-1px);
-      box-shadow: 0 6px 20px -5px rgba(100, 108, 255, 0.5);
+      box-shadow: 0 4px 12px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3);
+    }
+
+    button.primary:active:not(:disabled) {
+      transform: translateY(0);
+      background-color: var(--primary-active);
     }
 
     /* Ghost Variant */
     button.ghost {
       background: transparent;
       color: var(--text-secondary);
+      border-color: var(--border-color);
     }
 
     button.ghost:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.05);
-      color: white;
+      background-color: var(--border-color);
+      color: var(--text-color);
+      border-color: var(--text-tertiary);
     }
 
     /* Danger Variant */
     button.danger {
-      background: rgba(255, 71, 87, 0.1);
-      color: #ff4757;
+      background-color: hsla(0, 84%, 60%, 0.1);
+      color: hsl(0, 84%, 60%);
+      border-color: hsla(0, 84%, 60%, 0.2);
     }
 
     button.danger:hover:not(:disabled) {
-      background: #ff4757;
+      background-color: hsl(0, 84%, 60%);
       color: white;
-    }
-
-    button:active:not(:disabled) {
-      transform: translateY(0);
+      border-color: hsl(0, 84%, 60%);
     }
 
     button:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: not-allowed;
       box-shadow: none;
       transform: none;
