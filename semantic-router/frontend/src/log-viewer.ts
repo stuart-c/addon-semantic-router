@@ -2,474 +2,285 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
 interface LogEntry {
-  id: string;
+  id: number;
   timestamp: string;
-  duration: number;
-  route?: number;
-  query: string;
-  request: string;
+  route: string;
+  prompt: string;
   response: string;
-  failure_reason?: string;
-  llm?: number;
-  original_id?: string;
+  llm: string;
 }
 
 @customElement('log-viewer')
 export class LogViewer extends LitElement {
   @state() private logs: LogEntry[] = [];
-  @state() private filteredLogs: LogEntry[] = [];
-  @state() private selectedLogId: string | null = null;
-  @state() private filterText = '';
-  @state() private sortColumn: keyof LogEntry = 'timestamp';
-  @state() private sortDirection: 'asc' | 'desc' = 'desc';
+  @state() private selectedLog: LogEntry | null = null;
   @state() private loading = true;
-
-  // UI State
-  @state() private splitHeight = 300; // Height of bottom area
-  @state() private columnWidths: Record<string, number> = {
-    timestamp: 180,
-    route: 100,
-    query: 300,
-    response: 300,
-    duration: 100
-  };
-
-  private pollInterval?: number;
-  private isResizingSplit = false;
-  private isResizingColumn = false;
-  private currentResizingColumn: string | null = null;
-  private startX = 0;
-  private startY = 0;
-  private startWidth = 0;
-  private startHeight = 0;
 
   static styles = css`
     :host {
       display: flex;
-      flex-direction: column;
       height: 100%;
       width: 100%;
       overflow: hidden;
       color: var(--text-color);
+      animation: fadeIn 0.4s ease-out;
     }
 
-    .toolbar {
-      padding: 0.75rem 1rem;
-      background-color: var(--surface-color);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      gap: 1rem;
-      align-items: center;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .search-input {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      padding: 0.5rem 0.75rem;
-      color: white;
-      font-size: 0.875rem;
-      width: 300px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .search-input:focus {
-      border-color: var(--primary-color);
-    }
-
-    .main-container {
+    .log-grid {
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      position: relative;
+      border-right: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.01);
     }
 
-    .grid-container {
-      flex: 1;
-      overflow: auto;
-      background: #1e1e1e;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      table-layout: fixed;
-    }
-
-    th {
-      position: sticky;
-      top: 0;
-      background: #2d2d2d;
-      padding: 0.75rem;
-      text-align: left;
+    .grid-header {
+      display: grid;
+      grid-template-columns: 180px 140px 140px 1fr;
+      padding: 1rem 1.5rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid var(--border-color);
       font-size: 0.75rem;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.1em;
       color: var(--text-secondary);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      z-index: 10;
-      user-select: none;
     }
 
-    th.sortable {
+    .grid-body {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .log-row {
+      display: grid;
+      grid-template-columns: 180px 140px 140px 1fr;
+      padding: 0.875rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
       cursor: pointer;
-    }
-
-    th.sortable:hover {
-      background: #363636;
-      color: white;
-    }
-
-    .resizer {
-      position: absolute;
-      right: 0;
-      top: 0;
-      width: 4px;
-      height: 100%;
-      cursor: col-resize;
-      z-index: 11;
-    }
-
-    .resizer:hover, .resizer.active {
-      background: var(--primary-color);
-    }
-
-    td {
-      padding: 0.6rem 0.75rem;
+      transition: all var(--transition-speed);
       font-size: 0.875rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .log-row:hover {
+      background: var(--surface-hover);
+    }
+
+    .log-row.selected {
+      background: var(--primary-light);
+      color: var(--primary-color);
+    }
+
+    .timestamp { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; opacity: 0.8; }
+    .route-name { font-weight: 600; }
+    .llm-name { color: var(--text-secondary); }
+    .prompt-preview { 
+      color: var(--text-muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      color: var(--text-secondary);
-    }
-
-    tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
-      color: white;
-    }
-
-    tr.selected td {
-      background: rgba(100, 108, 255, 0.1);
-      color: white;
-      border-left: 2px solid var(--primary-color);
-    }
-
-    .split-divider {
-      height: 4px;
-      background: #2d2d2d;
-      cursor: row-resize;
-      transition: background 0.2s;
-      z-index: 20;
-    }
-
-    .split-divider:hover, .split-divider.active {
-      background: var(--primary-color);
     }
 
     .detail-view {
-      background: #1a1a1a;
-      overflow: auto;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      width: 500px;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-color);
+      box-shadow: -10px 0 30px rgba(0,0,0,0.3);
+      z-index: 10;
+    }
+
+    .detail-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--surface-color);
+    }
+
+    .detail-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
     }
 
     .detail-content {
       padding: 1.5rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
     }
 
-    .detail-card {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 8px;
-      padding: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .detail-card h3 {
-      margin-top: 0;
-      margin-bottom: 0.75rem;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
+    .detail-section h3 {
+      font-size: 0.75rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+      margin-top: 0;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    .detail-card pre {
+    .detail-section h3 svg {
+      color: var(--primary-color);
+    }
+
+    .bubble {
+      background: var(--surface-color);
+      padding: 1.25rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      font-family: 'Inter', sans-serif;
+    }
+
+    pre {
       margin: 0;
       white-space: pre-wrap;
-      word-break: break-all;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8125rem;
-      color: #e0e0e0;
-      background: #000;
-      padding: 0.75rem;
-      border-radius: 4px;
+      font-size: 0.875rem;
     }
 
-    .status-pill {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
+    .empty-detail {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 3rem;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 6px;
       font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    .status-error {
-      background: rgba(255, 71, 87, 0.1);
-      color: #ff4757;
-    }
-
-    .status-success {
-      background: rgba(46, 213, 115, 0.1);
-      color: #2ed573;
+      font-weight: 700;
+      background: var(--primary-light);
+      color: var(--primary-color);
     }
   `;
 
   connectedCallback() {
     super.connectedCallback();
     this.fetchLogs();
-    this.pollInterval = setInterval(() => this.fetchLogs(true), 5000);
-    window.addEventListener('mousemove', this.handleGlobalMouseMove);
-    window.addEventListener('mouseup', this.handleGlobalMouseUp);
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    if (this.pollInterval) clearInterval(this.pollInterval);
-    window.removeEventListener('mousemove', this.handleGlobalMouseMove);
-    window.removeEventListener('mouseup', this.handleGlobalMouseUp);
-  }
-
-  async fetchLogs(isSilent = false) {
-    if (!isSilent) this.loading = true;
+  async fetchLogs() {
+    this.loading = true;
     try {
-      const response = await fetch('api/log');
-      if (!response.ok) throw new Error('Failed to fetch logs');
-      const data = await response.json();
-      this.logs = data;
-      this.applyFilters();
+      const res = await fetch('/api/log');
+      if (!res.ok) throw new Error('Failed to fetch logs');
+      this.logs = await res.json();
+      this.logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     } catch (err) {
-      console.error('Failed to fetch logs:', err);
+      console.error(err);
     } finally {
-      if (!isSilent) this.loading = false;
+      this.loading = false;
     }
   }
 
-  private applyFilters() {
-    let result = [...this.logs];
-
-    if (this.filterText) {
-      const search = this.filterText.toLowerCase();
-      result = result.filter(log => 
-        log.query?.toLowerCase().includes(search) || 
-        log.response?.toLowerCase().includes(search) ||
-        log.id.toLowerCase().includes(search)
-      );
-    }
-
-    result.sort((a, b) => {
-      const valA = a[this.sortColumn] ?? '';
-      const valB = b[this.sortColumn] ?? '';
-      
-      if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
-      if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
-      return 0;
+  private _formatDate(isoString: string) {
+    const d = new Date(isoString);
+    return d.toLocaleString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false 
     });
-
-    this.filteredLogs = result;
-  }
-
-  private handleSort(column: keyof LogEntry) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'desc';
-    }
-    this.applyFilters();
-  }
-
-  private handleFilter(e: Event) {
-    this.filterText = (e.target as HTMLInputElement).value;
-    this.applyFilters();
-  }
-
-  // Resizing Logic
-  private handleColumnResizeStart(e: MouseEvent, column: string) {
-    e.stopPropagation();
-    this.isResizingColumn = true;
-    this.currentResizingColumn = column;
-    this.startX = e.pageX;
-    this.startWidth = this.columnWidths[column];
-    document.body.style.cursor = 'col-resize';
-  }
-
-  private handleSplitResizeStart(e: MouseEvent) {
-    e.stopPropagation();
-    this.isResizingSplit = true;
-    this.startY = e.pageY;
-    this.startHeight = this.splitHeight;
-    document.body.style.cursor = 'row-resize';
-  }
-
-  private handleGlobalMouseMove = (e: MouseEvent) => {
-    if (this.isResizingColumn && this.currentResizingColumn) {
-      const delta = e.pageX - this.startX;
-      this.columnWidths = {
-        ...this.columnWidths,
-        [this.currentResizingColumn]: Math.max(50, this.startWidth + delta)
-      };
-    } else if (this.isResizingSplit) {
-      const delta = this.startY - e.pageY; // Drag up increases bottom height
-      this.splitHeight = Math.max(100, Math.min(window.innerHeight - 200, this.startHeight + delta));
-    }
-  };
-
-  private handleGlobalMouseUp = () => {
-    this.isResizingColumn = false;
-    this.isResizingSplit = false;
-    this.currentResizingColumn = null;
-    document.body.style.cursor = '';
-  };
-
-  private selectLog(id: string) {
-    this.selectedLogId = id;
-  }
-
-  private renderHeader(column: keyof LogEntry, label: string) {
-    return html`
-      <th 
-        class="sortable" 
-        style="width: ${this.columnWidths[column as string]}px"
-        @click="${() => this.handleSort(column)}"
-      >
-        ${label} ${this.sortColumn === column ? (this.sortDirection === 'asc' ? '↑' : '↓') : ''}
-        <div 
-          class="resizer" 
-          @mousedown="${(e: MouseEvent) => this.handleColumnResizeStart(e, column as string)}"
-        ></div>
-      </th>
-    `;
   }
 
   render() {
-    const selectedLog = this.logs.find(l => l.id === this.selectedLogId);
-
     return html`
-      <div class="toolbar">
-        <input 
-          type="text" 
-          class="search-input" 
-          placeholder="Filter logs..." 
-          .value="${this.filterText}"
-          @input="${this.handleFilter}"
-        >
-        ${this.loading ? html`<span style="font-size: 0.75rem; color: var(--text-secondary)">Updating...</span>` : ''}
+      <div class="log-grid">
+        <div class="grid-header">
+          <div>Timestamp</div>
+          <div>Route</div>
+          <div>LLM</div>
+          <div>Prompt Preview</div>
+        </div>
+        <div class="grid-body">
+          ${this.logs.map(log => html`
+            <div 
+              class="log-row ${this.selectedLog?.id === log.id ? 'selected' : ''}"
+              @click="${() => this.selectedLog = log}"
+            >
+              <div class="timestamp">${this._formatDate(log.timestamp)}</div>
+              <div class="route-name">${log.route}</div>
+              <div class="llm-name">${log.llm}</div>
+              <div class="prompt-preview">${log.prompt}</div>
+            </div>
+          `)}
+          ${this.logs.length === 0 && !this.loading ? html`
+            <div style="padding: 4rem; text-align: center; color: var(--text-muted);">
+              No activity logs found.
+            </div>
+          ` : ''}
+        </div>
       </div>
 
-      <div class="main-container">
-        <div class="grid-container">
-          <table>
-            <thead>
-              <tr>
-                ${this.renderHeader('timestamp', 'Timestamp')}
-                ${this.renderHeader('route', 'Route')}
-                ${this.renderHeader('query', 'Query')}
-                ${this.renderHeader('response', 'Response')}
-                ${this.renderHeader('duration', 'Dur (s)')}
-              </tr>
-            </thead>
-            <tbody>
-              ${this.filteredLogs.map(log => html`
-                <tr 
-                  class="${this.selectedLogId === log.id ? 'selected' : ''}"
-                  @click="${() => this.selectLog(log.id)}"
-                >
-                  <td>${new Date(log.timestamp).toLocaleString()}</td>
-                  <td>${log.route ?? '-'}</td>
-                  <td title="${log.query}">${log.query}</td>
-                  <td title="${log.response}">${log.response}</td>
-                  <td>${log.duration.toFixed(3)}</td>
-                </tr>
-              `)}
-              ${this.filteredLogs.length === 0 && !this.loading ? html`
-                <tr><td colspan="5" style="text-align: center; padding: 2rem;">No logs found</td></tr>
-              ` : ''}
-            </tbody>
-          </table>
-        </div>
-
-        <div 
-          class="split-divider ${this.isResizingSplit ? 'active' : ''}"
-          @mousedown="${this.handleSplitResizeStart}"
-        ></div>
-
-        <div class="detail-view" style="height: ${this.splitHeight}px">
-          ${selectedLog ? html`
-            <div class="detail-content">
-              <div class="detail-card" style="grid-column: span 2">
-                <h3>Metadata</h3>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                  <div>
-                    <label style="display:block; font-size: 0.75rem; color: var(--text-secondary)">ID</label>
-                    <span style="font-family: monospace; font-size: 0.875rem;">${selectedLog.id}</span>
-                  </div>
-                  <div>
-                    <label style="display:block; font-size: 0.75rem; color: var(--text-secondary)">Timestamp</label>
-                    <span>${new Date(selectedLog.timestamp).toLocaleString()}</span>
-                  </div>
-                  <div>
-                    <label style="display:block; font-size: 0.75rem; color: var(--text-secondary)">Status</label>
-                    <span class="status-pill ${selectedLog.failure_reason ? 'status-error' : 'status-success'}">
-                      ${selectedLog.failure_reason ? 'Failed' : 'Success'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="detail-card">
-                <h3>Query</h3>
-                <pre>${selectedLog.query}</pre>
-              </div>
-
-              <div class="detail-card">
-                <h3>Response</h3>
-                <pre>${selectedLog.response}</pre>
-              </div>
-
-              ${selectedLog.request ? html`
-                <div class="detail-card">
-                  <h3>Full Request</h3>
-                  <pre>${selectedLog.request}</pre>
-                </div>
-              ` : ''}
-
-              ${selectedLog.failure_reason ? html`
-                <div class="detail-card">
-                  <h3>Failure Reason</h3>
-                  <pre style="color: #ff4757;">${selectedLog.failure_reason}</pre>
-                </div>
-              ` : ''}
+      <div class="detail-view">
+        ${this.selectedLog ? html`
+          <div class="detail-header">
+            <h2>Request Trace</h2>
+            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+              Log ID: ${this.selectedLog.id} • ${this._formatDate(this.selectedLog.timestamp)}
             </div>
-          ` : html`
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
-              Select a log entry to view details
+          </div>
+          <div class="detail-content">
+            <div class="detail-section">
+              <h3>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                User Prompt
+              </h3>
+              <div class="bubble">${this.selectedLog.prompt}</div>
             </div>
-          `}
-        </div>
+            
+            <div class="detail-section">
+              <h3>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                Routing Decision
+              </h3>
+              <div style="display: flex; gap: 1rem;">
+                <div class="badge">Route: ${this.selectedLog.route}</div>
+                <div class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">Provider: ${this.selectedLog.llm}</div>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                LLM Response
+              </h3>
+              <div class="bubble" style="background: rgba(0,0,0,0.3)">
+                <pre>${this.selectedLog.response}</pre>
+              </div>
+            </div>
+          </div>
+        ` : html`
+          <div class="empty-detail">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 1.5rem; opacity: 0.2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <p>Select a log entry from the list to view the full execution trace.</p>
+          </div>
+        `}
       </div>
     `;
-  }
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'log-viewer': LogViewer;
   }
 }

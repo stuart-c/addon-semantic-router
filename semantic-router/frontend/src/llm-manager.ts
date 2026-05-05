@@ -5,9 +5,7 @@ interface LLM {
   id: number;
   name: string;
   url: string;
-  secret: string;
   model: string | null;
-  timeout: number;
   enabled: boolean;
 }
 
@@ -19,14 +17,9 @@ export class LLMManager extends LitElement {
 
   // New LLM Form State
   @state() private showAddLlmModal = false;
-  @state() private newLlm = {
-    name: '',
-    url: '',
-    secret: '',
-    model: '',
-    timeout: 30,
-    enabled: true
-  };
+  @state() private newLlmName = '';
+  @state() private newLlmUrl = '';
+  @state() private newLlmModel = '';
 
   static styles = css`
     :host {
@@ -35,11 +28,17 @@ export class LLMManager extends LitElement {
       width: 100%;
       overflow: hidden;
       color: var(--text-color);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .sidebar {
       width: 300px;
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      border-right: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
       background: rgba(255, 255, 255, 0.02);
@@ -47,7 +46,7 @@ export class LLMManager extends LitElement {
 
     .sidebar-header {
       padding: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -55,7 +54,7 @@ export class LLMManager extends LitElement {
 
     .sidebar-header h2 {
       margin: 0;
-      font-size: 1rem;
+      font-size: 0.875rem;
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: var(--text-secondary);
@@ -69,10 +68,10 @@ export class LLMManager extends LitElement {
 
     .llm-item {
       padding: 0.75rem 1rem;
-      border-radius: 6px;
+      border-radius: var(--border-radius);
       cursor: pointer;
       margin-bottom: 0.25rem;
-      transition: all 0.2s;
+      transition: all var(--transition-speed);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -80,12 +79,12 @@ export class LLMManager extends LitElement {
     }
 
     .llm-item:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-hover);
     }
 
     .llm-item.selected {
-      background: rgba(100, 108, 255, 0.1);
-      border-color: rgba(100, 108, 255, 0.3);
+      background: var(--primary-light);
+      border-color: rgba(99, 102, 241, 0.3);
       color: var(--primary-color);
     }
 
@@ -101,7 +100,7 @@ export class LLMManager extends LitElement {
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      background: #1e1e1e;
+      background: rgba(15, 23, 42, 0.5);
     }
 
     .empty-state {
@@ -111,13 +110,14 @@ export class LLMManager extends LitElement {
       justify-content: center;
       height: 100%;
       color: var(--text-secondary);
-      opacity: 0.7;
+      text-align: center;
+      padding: 2rem;
     }
 
     .detail-header {
       padding: 1.5rem 2rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.01);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -130,11 +130,17 @@ export class LLMManager extends LitElement {
 
     .section {
       margin-bottom: 2.5rem;
+      background: var(--surface-color);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
     }
 
     .section h3 {
       font-size: 1.1rem;
-      margin-bottom: 1rem;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
       color: var(--text-color);
       display: flex;
       align-items: center;
@@ -150,47 +156,51 @@ export class LLMManager extends LitElement {
       margin-bottom: 0.5rem;
       font-size: 0.875rem;
       color: var(--text-secondary);
+      font-weight: 500;
     }
 
-    input[type="text"], 
-    input[type="number"], 
-    input[type="password"],
-    select {
+    input[type="text"], input[type="url"], select {
       width: 100%;
-      padding: 0.75rem;
+      padding: 0.75rem 1rem;
       background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
       color: white;
-      font-size: 0.9rem;
-      transition: border-color 0.2s;
+      font-size: 0.95rem;
+      transition: all var(--transition-speed);
     }
 
     input:focus, select:focus {
       outline: none;
       border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px var(--primary-light);
     }
 
     .btn {
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
       border: none;
       cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
+      font-weight: 600;
+      transition: all var(--transition-speed);
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
       font-size: 0.875rem;
+      font-family: inherit;
     }
 
     .btn-primary {
       background: var(--primary-color);
       color: white;
+      box-shadow: var(--shadow-md);
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
     }
 
     .btn-ghost {
@@ -199,52 +209,49 @@ export class LLMManager extends LitElement {
     }
 
     .btn-ghost:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-hover);
       color: white;
     }
 
     .btn-danger {
-      background: rgba(255, 71, 87, 0.1);
-      color: #ff4757;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
     }
 
     .btn-danger:hover {
-      background: #ff4757;
+      background: #ef4444;
       color: white;
     }
 
-    .btn-icon {
-      padding: 0.4rem;
-      border-radius: 4px;
-    }
-
-    /* Modal Styles */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
+      animation: fadeIn 0.2s ease-out;
     }
 
     .modal {
       background: var(--surface-color);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      width: 450px;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 450px;
       padding: 2rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      box-shadow: var(--shadow-lg);
     }
 
     .modal h2 {
       margin-top: 0;
       margin-bottom: 1.5rem;
+      font-size: 1.5rem;
     }
 
     .modal-actions {
@@ -255,30 +262,43 @@ export class LLMManager extends LitElement {
     }
 
     .badge {
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
       text-transform: uppercase;
     }
 
     .badge-enabled {
-      background: rgba(46, 213, 115, 0.2);
-      color: #2ed573;
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
     }
 
     .badge-disabled {
-      background: rgba(255, 71, 87, 0.2);
-      color: #ff4757;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
+    .loader {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   `;
 
   connectedCallback() {
     super.connectedCallback();
-    this.fetchLlms();
+    this.fetchLLMs();
   }
 
-  async fetchLlms() {
+  async fetchLLMs() {
     this.loading = true;
     try {
       const res = await fetch('/api/llm');
@@ -294,43 +314,43 @@ export class LLMManager extends LitElement {
     }
   }
 
-  async addLlm() {
-    if (!this.newLlm.name || !this.newLlm.url) return;
+  async addLLM() {
+    if (!this.newLlmName || !this.newLlmUrl) return;
 
     try {
       const res = await fetch('/api/llm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.newLlm)
+        body: JSON.stringify({
+          name: this.newLlmName,
+          url: this.newLlmUrl,
+          model: this.newLlmModel || null,
+          enabled: true
+        })
       });
 
       if (!res.ok) throw new Error('Failed to create LLM');
 
-      const created = await res.json();
-      this.llms = [...this.llms, created];
-      this.selectedLlmId = created.id;
+      const newLlm = await res.json();
+      this.llms = [...this.llms, newLlm];
+      this.selectedLlmId = newLlm.id;
       this.showAddLlmModal = false;
-      this.newLlm = {
-        name: '',
-        url: '',
-        secret: '',
-        model: '',
-        timeout: 30,
-        enabled: true
-      };
+      this.newLlmName = '';
+      this.newLlmUrl = '';
+      this.newLlmModel = '';
     } catch (err) {
       alert((err as Error).message);
     }
   }
 
-  async deleteLlm(id: number) {
+  async deleteLLM(id: number) {
     if (!confirm('Are you sure you want to delete this LLM? This may affect routes using it.')) return;
 
     try {
       const res = await fetch(`/api/llm/${id}`, { method: 'DELETE' });
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.detail || 'Failed to delete LLM');
+        const data = await res.json();
+        throw new Error(data.detail || 'Failed to delete LLM');
       }
 
       this.llms = this.llms.filter(l => l.id !== id);
@@ -342,20 +362,14 @@ export class LLMManager extends LitElement {
     }
   }
 
-  async updateLlmConfig(updates: Partial<LLM>) {
+  async updateLLMConfig(updates: Partial<LLM>) {
     if (!this.selectedLlmId) return;
-
-    // Filter out masked secret if it wasn't changed
-    const dataToUpdate = { ...updates };
-    if (dataToUpdate.secret === '***') {
-      delete dataToUpdate.secret;
-    }
 
     try {
       const res = await fetch(`/api/llm/${this.selectedLlmId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToUpdate)
+        body: JSON.stringify(updates)
       });
 
       if (!res.ok) throw new Error('Failed to update LLM');
@@ -369,7 +383,12 @@ export class LLMManager extends LitElement {
 
   render() {
     if (this.loading) {
-      return html`<div class="empty-state">Loading LLMs...</div>`;
+      return html`
+        <div class="empty-state">
+          <div class="loader"></div>
+          <p style="margin-top: 1rem">Loading LLM configurations...</p>
+        </div>
+      `;
     }
 
     const selectedLlm = this.llms.find(l => l.id === this.selectedLlmId);
@@ -377,12 +396,13 @@ export class LLMManager extends LitElement {
     return html`
       <div class="sidebar">
         <div class="sidebar-header">
-          <h2>LLMs</h2>
-          <button class="btn btn-ghost btn-icon" @click="${() => this.showAddLlmModal = true}" title="Add LLM">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <h2>LLM Providers</h2>
+          <button class="btn btn-ghost" @click="${() => this.showAddLlmModal = true}" title="Add LLM">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
+            <span>Add LLM</span>
           </button>
         </div>
         <div class="llm-list">
@@ -397,6 +417,11 @@ export class LLMManager extends LitElement {
               </div>
             </div>
           `)}
+          ${this.llms.length === 0 ? html`
+            <div style="padding: 2rem; text-align: center; color: var(--text-secondary); font-size: 0.875rem;">
+              No LLMs configured.
+            </div>
+          ` : ''}
         </div>
       </div>
 
@@ -404,83 +429,69 @@ export class LLMManager extends LitElement {
         ${selectedLlm ? html`
           <div class="detail-header">
             <div>
-              <h1 style="margin:0; font-size: 1.5rem;">${selectedLlm.name}</h1>
-              <span style="font-size: 0.875rem; color: var(--text-secondary)">LLM ID: ${selectedLlm.id}</span>
+              <h1 style="margin:0; font-size: 1.5rem; font-weight: 600;">${selectedLlm.name}</h1>
+              <span style="font-size: 0.875rem; color: var(--text-secondary)">ID: ${selectedLlm.id}</span>
             </div>
-            <button class="btn btn-danger" @click="${() => this.deleteLlm(selectedLlm.id)}">
-              Delete LLM
+            <button class="btn btn-danger" @click="${() => this.deleteLLM(selectedLlm.id)}">
+              Delete Provider
             </button>
           </div>
 
           <div class="detail-body">
             <div class="section">
-              <h3>General Configuration</h3>
+              <h3>Connection Settings</h3>
               <div class="form-group">
-                <label>LLM Name</label>
+                <label>Provider Name</label>
                 <input 
                   type="text" 
                   .value="${selectedLlm.name}" 
-                  @change="${(e: any) => this.updateLlmConfig({ name: e.target.value })}"
+                  @change="${(e: any) => this.updateLLMConfig({ name: e.target.value })}"
                 >
               </div>
               <div class="form-group">
                 <label>API URL</label>
                 <input 
-                  type="text" 
+                  type="url" 
                   .value="${selectedLlm.url}" 
-                  @change="${(e: any) => this.updateLlmConfig({ url: e.target.value })}"
-                  placeholder="https://api.openai.com/v1/chat/completions"
+                  @change="${(e: any) => this.updateLLMConfig({ url: e.target.value })}"
+                  placeholder="https://api.openai.com/v1"
                 >
               </div>
               <div class="form-group">
-                <label>API Secret / Key</label>
-                <input 
-                  type="password" 
-                  .value="${selectedLlm.secret}" 
-                  @focus="${(e: any) => { if (e.target.value === '***') e.target.value = ''; }}"
-                  @blur="${(e: any) => { if (e.target.value === '') e.target.value = '***'; }}"
-                  @change="${(e: any) => this.updateLlmConfig({ secret: e.target.value })}"
-                  placeholder="Enter new secret to update"
-                >
-              </div>
-              <div class="form-group">
-                <label>Model Name</label>
+                <label>Model ID (Optional)</label>
                 <input 
                   type="text" 
                   .value="${selectedLlm.model || ''}" 
-                  @change="${(e: any) => this.updateLlmConfig({ model: e.target.value })}"
-                  placeholder="e.g. gpt-4o"
+                  @change="${(e: any) => this.updateLLMConfig({ model: e.target.value || null })}"
+                  placeholder="gpt-4o, claude-3-opus, etc."
                 >
               </div>
-              <div class="form-group">
-                <label>Timeout (seconds)</label>
-                <input 
-                  type="number" 
-                  .value="${selectedLlm.timeout.toString()}" 
-                  @change="${(e: any) => this.updateLlmConfig({ timeout: parseInt(e.target.value) })}"
-                >
-              </div>
-              <div class="form-group">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <div class="form-group" style="margin-bottom: 0">
+                <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; user-select: none;">
                   <input 
                     type="checkbox" 
+                    style="width: auto"
                     ?checked="${selectedLlm.enabled}"
-                    @change="${(e: any) => this.updateLlmConfig({ enabled: e.target.checked })}"
+                    @change="${(e: any) => this.updateLLMConfig({ enabled: e.target.checked })}"
                   >
-                  Enabled
+                  <span>Enabled</span>
                 </label>
               </div>
             </div>
           </div>
         ` : html`
           <div class="empty-state">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 1rem; opacity: 0.5;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 1.5rem; opacity: 0.2; color: var(--primary-color)">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
-            <h2>No LLM Selected</h2>
-            <p>Select an LLM from the sidebar or create a new one.</p>
-            <button class="btn btn-primary" @click="${() => this.showAddLlmModal = true}" style="margin-top: 1rem;">
-              Add First LLM
+            <h2>No Provider Selected</h2>
+            <p>Select an LLM provider from the sidebar or configure a new one.</p>
+            <button class="btn btn-primary" @click="${() => this.showAddLlmModal = true}" style="margin-top: 1.5rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add Your First Provider
             </button>
           </div>
         `}
@@ -491,49 +502,40 @@ export class LLMManager extends LitElement {
           <div class="modal" @click="${(e: Event) => e.stopPropagation()}">
             <h2>Add New LLM</h2>
             <div class="form-group">
-              <label>LLM Name</label>
+              <label>Provider Name</label>
               <input 
                 type="text" 
-                placeholder="e.g. OpenAI GPT-4"
-                .value="${this.newLlm.name}"
-                @input="${(e: any) => this.newLlm.name = e.target.value}"
+                placeholder="e.g. OpenAI, Anthropic, Local LLM"
+                .value="${this.newLlmName}"
+                @input="${(e: any) => this.newLlmName = e.target.value}"
               >
             </div>
             <div class="form-group">
               <label>API URL</label>
               <input 
-                type="text" 
-                placeholder="https://api.openai.com/v1/chat/completions"
-                .value="${this.newLlm.url}"
-                @input="${(e: any) => this.newLlm.url = e.target.value}"
+                type="url" 
+                placeholder="https://api.openai.com/v1"
+                .value="${this.newLlmUrl}"
+                @input="${(e: any) => this.newLlmUrl = e.target.value}"
               >
             </div>
             <div class="form-group">
-              <label>API Secret / Key</label>
-              <input 
-                type="password" 
-                placeholder="sk-..."
-                .value="${this.newLlm.secret}"
-                @input="${(e: any) => this.newLlm.secret = e.target.value}"
-              >
-            </div>
-            <div class="form-group">
-              <label>Model Name</label>
+              <label>Model ID (Optional)</label>
               <input 
                 type="text" 
-                placeholder="gpt-4"
-                .value="${this.newLlm.model}"
-                @input="${(e: any) => this.newLlm.model = e.target.value}"
+                placeholder="e.g. gpt-4o"
+                .value="${this.newLlmModel}"
+                @input="${(e: any) => this.newLlmModel = e.target.value}"
               >
             </div>
             <div class="modal-actions">
               <button class="btn btn-ghost" @click="${() => this.showAddLlmModal = false}">Cancel</button>
               <button 
                 class="btn btn-primary" 
-                ?disabled="${!this.newLlm.name || !this.newLlm.url}"
-                @click="${this.addLlm}"
+                ?disabled="${!this.newLlmName || !this.newLlmUrl}"
+                @click="${this.addLLM}"
               >
-                Add LLM
+                Add Provider
               </button>
             </div>
           </div>
