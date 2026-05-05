@@ -1,5 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import './components/sr-badge';
+import './components/sr-button';
 
 interface LogEntry {
   id: string;
@@ -212,22 +214,49 @@ export class LogViewer extends LitElement {
       border-radius: 4px;
     }
 
-    .status-pill {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 500;
+    .split-divider.active {
+      background: var(--primary-color);
     }
 
-    .status-error {
-      background: rgba(255, 71, 87, 0.1);
-      color: #ff4757;
+    .detail-view {
+      background: #1a1a1a;
+      overflow: auto;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .status-success {
-      background: rgba(46, 213, 115, 0.1);
-      color: #2ed573;
+    .detail-content {
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .detail-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .detail-card h3 {
+      margin-top: 0;
+      margin-bottom: 0.75rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .detail-card pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8125rem;
+      color: #e0e0e0;
+      background: #000;
+      padding: 0.75rem;
+      border-radius: 4px;
     }
   `;
 
@@ -426,9 +455,9 @@ export class LogViewer extends LitElement {
                   </div>
                   <div>
                     <label style="display:block; font-size: 0.75rem; color: var(--text-secondary)">Status</label>
-                    <span class="status-pill ${selectedLog.failure_reason ? 'status-error' : 'status-success'}">
+                    <sr-badge variant="${selectedLog.failure_reason ? 'disabled' : 'enabled'}">
                       ${selectedLog.failure_reason ? 'Failed' : 'Success'}
-                    </span>
+                    </sr-badge>
                   </div>
                 </div>
               </div>
