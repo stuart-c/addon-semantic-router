@@ -249,7 +249,7 @@ export class LogViewer extends LitElement {
   async fetchLogs(isSilent = false) {
     if (!isSilent) this.loading = true;
     try {
-      const response = await fetch('/log');
+      const response = await fetch('api/log');
       if (!response.ok) throw new Error('Failed to fetch logs');
       const data = await response.json();
       this.logs = data;
