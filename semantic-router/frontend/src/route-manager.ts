@@ -29,7 +29,7 @@ export class RouteManager extends LitElement {
   @state() private llms: LLM[] = [];
   @state() private selectedRouteId: number | null = null;
   @state() private loading = true;
-  @state() private error: string | null = null;
+
 
   // New Route Form State
   @state() private showAddRouteModal = false;
@@ -323,8 +323,9 @@ export class RouteManager extends LitElement {
         this.selectedRouteId = this.routes[0].id;
       }
     } catch (err) {
-      this.error = (err as Error).message;
+      console.error(err);
     } finally {
+
       this.loading = false;
     }
   }

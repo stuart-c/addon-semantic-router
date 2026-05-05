@@ -4,7 +4,8 @@ import { RouteManager } from './route-manager';
 
 // Mock fetch
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+(window as any).fetch = mockFetch;
+
 
 const mockRoutes = [
   { id: 1, name: 'Test Route', llm: 1, enabled: true, utterances: [{ id: 1, route_id: 1, utterance: 'Hello' }] }
