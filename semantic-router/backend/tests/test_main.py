@@ -278,8 +278,8 @@ def test_log_operations():
 
 
 def test_frontend_route():
-    os.makedirs("semantic-router/frontend", exist_ok=True)
-    with open("semantic-router/frontend/index.html", "w") as f:
+    os.makedirs("semantic-router/frontend/dist", exist_ok=True)
+    with open("semantic-router/frontend/dist/index.html", "w") as f:
         f.write("<html></html>")
 
     response = client.get("/")

@@ -15,4 +15,12 @@ echo "Running linting (flake8)..."
 echo "Running unit tests (pytest)..."
 export PYTHONPATH=$PYTHONPATH:$(pwd)/semantic-router
 ./.venv/bin/pytest semantic-router/backend/tests
+
+echo "Running frontend unit tests (vitest)..."
+source .venv/bin/activate
+cd semantic-router/frontend
+npm run test
+cd ../..
+
+echo "All tests completed."
 echo "Coverage report generated in htmlcov/index.html"

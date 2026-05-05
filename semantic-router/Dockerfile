@@ -1,5 +1,13 @@
 ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:bookworm
- 
+
+# Stage 0: Build frontend
+FROM node:24-slim AS frontend-builder
+WORKDIR /build
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
 # Stage 1: Build dependencies
 FROM $BUILD_FROM AS builder
 
@@ -47,7 +55,7 @@ COPY --from=builder /opt/venv /opt/venv
 
 # Copy application code
 COPY backend/ /app/backend/
-COPY frontend/ /app/frontend/
+COPY --from=frontend-builder /build/dist /app/frontend/dist
 COPY config.yaml /app/config.yaml
 
 # Copy run script
