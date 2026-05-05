@@ -4,6 +4,8 @@ import './log-viewer';
 import './components/config-view';
 import './semantic-router-test-tab';
 import './route-manager';
+import './llm-manager';
+
 
 
 @customElement('semantic-router-app')
@@ -166,12 +168,7 @@ export class SemanticRouterApp extends LitElement {
         return html`<route-manager></route-manager>`;
 
       case 'llms':
-        return html`
-          <div class="empty-state">
-            <h2>LLMs</h2>
-            <p>Manage your LLM configurations.</p>
-          </div>
-        `;
+        return html`<llm-manager></llm-manager>`;
       case 'config':
         return html`<config-view></config-view>`;
       case 'test':
