@@ -30,3 +30,6 @@ semantic-router/frontend/node_modules/
 semantic-router/frontend/dist/
 semantic-router/frontend/dist-ssr/
 semantic-router/frontend/*.local
+
+# Worktrees
+.worktrees/
