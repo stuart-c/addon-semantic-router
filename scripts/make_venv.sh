@@ -19,6 +19,6 @@ echo "Installing backend dependencies..."
 
 # Set up nodeenv
 echo "Setting up Node.js environment (LTS)..."
-./.venv/bin/nodeenv -p --node=lts
+./.venv/bin/nodeenv -p --node=20.18.0
 
 echo "Virtual environment ready (Python + Node.js)."

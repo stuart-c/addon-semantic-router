@@ -30,8 +30,6 @@ export class RouteManager extends LitElement {
   @state() private selectedRouteId: number | null = null;
   @state() private loading = true;
 
-
-  // New Route Form State
   @state() private showAddRouteModal = false;
   @state() private newRouteName = '';
   @state() private newRouteLlmId: number | null = null;
@@ -43,11 +41,17 @@ export class RouteManager extends LitElement {
       width: 100%;
       overflow: hidden;
       color: var(--text-color);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .sidebar {
       width: 300px;
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      border-right: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
       background: rgba(255, 255, 255, 0.02);
@@ -55,7 +59,7 @@ export class RouteManager extends LitElement {
 
     .sidebar-header {
       padding: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -63,7 +67,7 @@ export class RouteManager extends LitElement {
 
     .sidebar-header h2 {
       margin: 0;
-      font-size: 1rem;
+      font-size: 0.875rem;
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: var(--text-secondary);
@@ -77,10 +81,10 @@ export class RouteManager extends LitElement {
 
     .route-item {
       padding: 0.75rem 1rem;
-      border-radius: 6px;
+      border-radius: var(--border-radius);
       cursor: pointer;
       margin-bottom: 0.25rem;
-      transition: all 0.2s;
+      transition: all var(--transition-speed);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -88,12 +92,12 @@ export class RouteManager extends LitElement {
     }
 
     .route-item:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-hover);
     }
 
     .route-item.selected {
-      background: rgba(100, 108, 255, 0.1);
-      border-color: rgba(100, 108, 255, 0.3);
+      background: var(--primary-light);
+      border-color: rgba(99, 102, 241, 0.3);
       color: var(--primary-color);
     }
 
@@ -109,7 +113,7 @@ export class RouteManager extends LitElement {
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      background: #1e1e1e;
+      background: rgba(15, 23, 42, 0.5);
     }
 
     .empty-state {
@@ -124,8 +128,8 @@ export class RouteManager extends LitElement {
 
     .detail-header {
       padding: 1.5rem 2rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.01);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -138,11 +142,17 @@ export class RouteManager extends LitElement {
 
     .section {
       margin-bottom: 2.5rem;
+      background: var(--surface-color);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
     }
 
     .section h3 {
       font-size: 1.1rem;
-      margin-bottom: 1rem;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
       color: var(--text-color);
       display: flex;
       align-items: center;
@@ -158,22 +168,24 @@ export class RouteManager extends LitElement {
       margin-bottom: 0.5rem;
       font-size: 0.875rem;
       color: var(--text-secondary);
+      font-weight: 500;
     }
 
     input[type="text"], select {
       width: 100%;
-      padding: 0.75rem;
+      padding: 0.75rem 1rem;
       background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
       color: white;
-      font-size: 0.9rem;
-      transition: border-color 0.2s;
+      font-size: 0.95rem;
+      transition: all var(--transition-speed);
     }
 
     input:focus, select:focus {
       outline: none;
       border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px var(--primary-light);
     }
 
     .utterance-list {
@@ -186,10 +198,16 @@ export class RouteManager extends LitElement {
       display: flex;
       gap: 0.5rem;
       align-items: center;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 0.5rem 0.75rem;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      transition: all var(--transition-speed);
+    }
+
+    .utterance-item:focus-within {
+      border-color: var(--primary-color);
+      background: rgba(0, 0, 0, 0.3);
     }
 
     .utterance-input {
@@ -197,28 +215,35 @@ export class RouteManager extends LitElement {
       background: transparent !important;
       border: none !important;
       padding: 0.25rem !important;
+      color: white;
+      font-size: 0.9rem;
     }
 
     .btn {
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
       border: none;
       cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
+      font-weight: 600;
+      transition: all var(--transition-speed);
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
       font-size: 0.875rem;
+      font-family: inherit;
     }
 
     .btn-primary {
       background: var(--primary-color);
       color: white;
+      box-shadow: var(--shadow-md);
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
     }
 
     .btn-ghost {
@@ -227,34 +252,28 @@ export class RouteManager extends LitElement {
     }
 
     .btn-ghost:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-hover);
       color: white;
     }
 
     .btn-danger {
-      background: rgba(255, 71, 87, 0.1);
-      color: #ff4757;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
     }
 
     .btn-danger:hover {
-      background: #ff4757;
+      background: #ef4444;
       color: white;
     }
 
-    .btn-icon {
-      padding: 0.4rem;
-      border-radius: 4px;
-    }
-
-    /* Modal Styles */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -263,16 +282,18 @@ export class RouteManager extends LitElement {
 
     .modal {
       background: var(--surface-color);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      width: 400px;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 450px;
       padding: 2rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      box-shadow: var(--shadow-lg);
     }
 
     .modal h2 {
       margin-top: 0;
       margin-bottom: 1.5rem;
+      font-size: 1.5rem;
     }
 
     .modal-actions {
@@ -283,21 +304,34 @@ export class RouteManager extends LitElement {
     }
 
     .badge {
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
       text-transform: uppercase;
     }
 
     .badge-enabled {
-      background: rgba(46, 213, 115, 0.2);
-      color: #2ed573;
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
     }
 
     .badge-disabled {
-      background: rgba(255, 71, 87, 0.2);
-      color: #ff4757;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
+    .loader {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   `;
 
@@ -325,7 +359,6 @@ export class RouteManager extends LitElement {
     } catch (err) {
       console.error(err);
     } finally {
-
       this.loading = false;
     }
   }
@@ -457,7 +490,12 @@ export class RouteManager extends LitElement {
 
   render() {
     if (this.loading) {
-      return html`<div class="empty-state">Loading routes...</div>`;
+      return html`
+        <div class="empty-state">
+          <div class="loader"></div>
+          <p style="margin-top: 1rem">Loading routes...</p>
+        </div>
+      `;
     }
 
     const selectedRoute = this.routes.find(r => r.id === this.selectedRouteId);
@@ -466,11 +504,12 @@ export class RouteManager extends LitElement {
       <div class="sidebar">
         <div class="sidebar-header">
           <h2>Routes</h2>
-          <button class="btn btn-ghost btn-icon" @click="${() => this.showAddRouteModal = true}" title="Add Route">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button class="btn btn-ghost" @click="${() => this.showAddRouteModal = true}" title="Add Route">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
+            <span>Add Route</span>
           </button>
         </div>
         <div class="route-list">
@@ -492,7 +531,7 @@ export class RouteManager extends LitElement {
         ${selectedRoute ? html`
           <div class="detail-header">
             <div>
-              <h1 style="margin:0; font-size: 1.5rem;">${selectedRoute.name}</h1>
+              <h1 style="margin:0; font-size: 1.5rem; font-weight: 600;">${selectedRoute.name}</h1>
               <span style="font-size: 0.875rem; color: var(--text-secondary)">Route ID: ${selectedRoute.id}</span>
             </div>
             <button class="btn btn-danger" @click="${() => this.deleteRoute(selectedRoute.id)}">
@@ -512,7 +551,7 @@ export class RouteManager extends LitElement {
                 >
               </div>
               <div class="form-group">
-                <label>Assigned LLM</label>
+                <label>Assigned LLM Provider</label>
                 <select 
                   .value="${selectedRoute.llm.toString()}"
                   @change="${(e: any) => this.updateRouteConfig({ llm: parseInt(e.target.value) })}"
@@ -522,25 +561,31 @@ export class RouteManager extends LitElement {
                       ${llm.name} (${llm.model || 'Default Model'})
                     </option>
                   `)}
+                  ${this.llms.length === 0 ? html`<option value="" disabled>No LLMs configured</option>` : ''}
                 </select>
               </div>
-              <div class="form-group">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <div class="form-group" style="margin-bottom: 0">
+                <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; user-select: none;">
                   <input 
                     type="checkbox" 
+                    style="width: auto"
                     ?checked="${selectedRoute.enabled}"
                     @change="${(e: any) => this.updateRouteConfig({ enabled: e.target.checked })}"
                   >
-                  Enabled
+                  <span>Route Enabled</span>
                 </label>
               </div>
             </div>
 
             <div class="section">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="margin:0">Utterances</h3>
-                <button class="btn btn-primary btn-ghost" @click="${() => this.addUtterance(selectedRoute.id)}">
-                  + Add Utterance
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin:0">Training Utterances</h3>
+                <button class="btn btn-primary" @click="${() => this.addUtterance(selectedRoute.id)}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>Add Utterance</span>
                 </button>
               </div>
               <div class="utterance-list">
@@ -553,7 +598,7 @@ export class RouteManager extends LitElement {
                       @change="${(e: any) => this.updateUtterance(selectedRoute.id, utt.id, e.target.value)}"
                     >
                     <button class="btn btn-ghost btn-icon btn-danger" @click="${() => this.deleteUtterance(selectedRoute.id, utt.id)}">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M3 6h18"></path>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                       </svg>
@@ -561,8 +606,9 @@ export class RouteManager extends LitElement {
                   </div>
                 `)}
                 ${selectedRoute.utterances.length === 0 ? html`
-                  <div style="text-align: center; padding: 2rem; color: var(--text-secondary); background: rgba(255,255,255,0.02); border-radius: 8px;">
-                    No utterances defined for this route.
+                  <div style="text-align: center; padding: 3rem; color: var(--text-muted); background: rgba(0,0,0,0.1); border-radius: 12px; border: 1px dashed var(--border-color);">
+                    <p style="margin:0">No utterances defined for this route.</p>
+                    <p style="font-size: 0.8125rem; margin-top: 0.5rem;">Utterances are used to train the router to recognize this intent.</p>
                   </div>
                 ` : ''}
               </div>
@@ -570,13 +616,17 @@ export class RouteManager extends LitElement {
           </div>
         ` : html`
           <div class="empty-state">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 1rem; opacity: 0.5;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 1.5rem; opacity: 0.2; color: var(--primary-color)">
               <path d="M9 17l6-5-6-5"></path>
               <circle cx="12" cy="12" r="10"></circle>
             </svg>
             <h2>No Route Selected</h2>
-            <p>Select a route from the sidebar or create a new one.</p>
-            <button class="btn btn-primary" @click="${() => this.showAddRouteModal = true}" style="margin-top: 1rem;">
+            <p>Select a route from the sidebar or create a new one to get started.</p>
+            <button class="btn btn-primary" @click="${() => this.showAddRouteModal = true}" style="margin-top: 1.5rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
               Create First Route
             </button>
           </div>
@@ -586,22 +636,22 @@ export class RouteManager extends LitElement {
       ${this.showAddRouteModal ? html`
         <div class="modal-overlay" @click="${() => this.showAddRouteModal = false}">
           <div class="modal" @click="${(e: Event) => e.stopPropagation()}">
-            <h2>Add New Route</h2>
+            <h2>New Route</h2>
             <div class="form-group">
               <label>Route Name</label>
               <input 
                 type="text" 
-                placeholder="e.g. Greeting, Technical Support"
+                placeholder="e.g. Technical Support, Sales"
                 .value="${this.newRouteName}"
                 @input="${(e: any) => this.newRouteName = e.target.value}"
               >
             </div>
             <div class="form-group">
-              <label>Assign LLM</label>
+              <label>LLM Provider</label>
               <select 
                 @change="${(e: any) => this.newRouteLlmId = parseInt(e.target.value)}"
               >
-                <option value="" disabled ?selected="${this.newRouteLlmId === null}">Select an LLM</option>
+                <option value="" disabled ?selected="${this.newRouteLlmId === null}">Choose a provider...</option>
                 ${this.llms.map(llm => html`
                   <option value="${llm.id}">${llm.name}</option>
                 `)}
@@ -621,11 +671,5 @@ export class RouteManager extends LitElement {
         </div>
       ` : ''}
     `;
-  }
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'route-manager': RouteManager;
   }
 }
