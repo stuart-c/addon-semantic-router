@@ -4,7 +4,7 @@ import { RouteManager } from './route-manager';
 
 // Mock fetch
 const mockFetch = vi.fn();
-(window as any).fetch = mockFetch;
+vi.stubGlobal('fetch', mockFetch);
 
 
 const mockRoutes = [
@@ -30,12 +30,12 @@ test('renders routes after fetching', async () => {
   
   await el.updateComplete;
   // Wait for async fetchInitialData
-  await new Promise(resolve => setTimeout(resolve, 50));
+  await new Promise(resolve => setTimeout(resolve, 200));
   await el.updateComplete;
 
-  const routeItems = el.shadowRoot?.querySelectorAll('.route-item');
+  const routeItems = el.shadowRoot?.querySelectorAll('sr-list-item');
   expect(routeItems?.length).toBe(1);
-  expect(routeItems?.[0].textContent?.includes('Test Route')).toBe(true);
+  expect((routeItems?.[0] as any).title).toBe('Test Route');
 });
 
 test('shows detail view when route is selected', async () => {
@@ -43,7 +43,7 @@ test('shows detail view when route is selected', async () => {
     const el = document.querySelector('route-manager') as RouteManager;
     
     await el.updateComplete;
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, 200));
     await el.updateComplete;
   
     const heading = el.shadowRoot?.querySelector('.detail-header h1');
@@ -52,5 +52,3 @@ test('shows detail view when route is selected', async () => {
     const utterances = el.shadowRoot?.querySelectorAll('.utterance-item');
     expect(utterances?.length).toBe(1);
 });
-
-

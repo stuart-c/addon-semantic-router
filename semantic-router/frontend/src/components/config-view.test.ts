@@ -43,7 +43,7 @@ test('renders form after data is loaded', async () => {
   const el = document.querySelector('config-view') as ConfigView;
   
   // Wait for all async work
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise(resolve => setTimeout(resolve, 300));
   await el.updateComplete;
 
   expect(el.shadowRoot?.querySelector('h2')?.textContent).toBe('Global Configuration');
@@ -77,7 +77,7 @@ test('saves configuration correctly', async () => {
 
   document.body.innerHTML = '<config-view></config-view>';
   const el = document.querySelector('config-view') as ConfigView;
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise(resolve => setTimeout(resolve, 300));
   await el.updateComplete;
 
   // Change log level
@@ -102,7 +102,7 @@ test('saves configuration correctly', async () => {
   await el.updateComplete;
   expect(saveBtn.textContent?.trim()).toBe('Saving...');
 
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise(resolve => setTimeout(resolve, 300));
   await el.updateComplete;
 
   expect(el.shadowRoot?.querySelector('.feedback.success')).toBeTruthy();
@@ -128,7 +128,7 @@ test('handles save error correctly', async () => {
 
   document.body.innerHTML = '<config-view></config-view>';
   const el = document.querySelector('config-view') as ConfigView;
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise(resolve => setTimeout(resolve, 300));
   await el.updateComplete;
 
   // Mock save failure
@@ -144,7 +144,7 @@ test('handles save error correctly', async () => {
   const saveBtn = el.shadowRoot?.querySelector('.btn-primary') as HTMLButtonElement;
   saveBtn.click();
 
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise(resolve => setTimeout(resolve, 300));
   await el.updateComplete;
 
   expect(el.shadowRoot?.querySelector('.feedback.error')).toBeTruthy();
