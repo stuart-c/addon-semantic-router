@@ -15,22 +15,8 @@ export class SemanticRouterApp extends LitElement {
   static styles = [
     sharedStyles,
     css`
-      header {
-        padding: 1.5rem 2.5rem;
-        background-color: var(--surface-elevated);
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: 1.25rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        text-transform: uppercase;
-        color: var(--primary-color);
+      :host {
+        flex-direction: column;
       }
 
       nav {
@@ -75,7 +61,7 @@ export class SemanticRouterApp extends LitElement {
         background-color: var(--surface-color);
         border-radius: var(--border-radius);
         min-height: 500px;
-        height: calc(100vh - 220px);
+        flex: 1;
         border: 1px solid var(--border-color);
         box-shadow: var(--shadow-md);
         animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -93,9 +79,6 @@ export class SemanticRouterApp extends LitElement {
 
   render() {
     return html`
-      <header>
-        <h1>Semantic Router</h1>
-      </header>
       <nav>
         <div 
           class="tab ${this.activeTab === 'logs' ? 'active' : ''}" 
