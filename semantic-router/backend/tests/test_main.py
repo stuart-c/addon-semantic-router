@@ -278,13 +278,15 @@ def test_log_operations():
 
 
 def test_frontend_route():
-    os.makedirs("semantic-router/frontend/dist", exist_ok=True)
-    with open("semantic-router/frontend/dist/index.html", "w") as f:
-        f.write("<html></html>")
+    from fastapi.responses import HTMLResponse
 
-    response = client.get("/")
-    assert response.status_code == 200
-    assert "text/html" in response.headers["content-type"]
+    with patch(
+        "backend.routes.frontend.FileResponse",
+        return_value=HTMLResponse("<html></html>"),
+    ):
+        response = client.get("/")
+        assert response.status_code == 200
+        assert "text/html" in response.headers["content-type"]
 
 
 def get_mock_llm_response(content="Mocked response"):
