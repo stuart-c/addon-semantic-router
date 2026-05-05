@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import './log-viewer';
+import './components/config-view';
 
 @customElement('semantic-router-app')
 export class SemanticRouterApp extends LitElement {
@@ -131,6 +132,13 @@ export class SemanticRouterApp extends LitElement {
         >
           LLMs
         </div>
+        <div 
+          class="tab ${this.activeTab === 'config' ? 'active' : ''}" 
+          @click="${() => this.activeTab = 'config'}"
+          id="tab-config"
+        >
+          Config
+        </div>
       </nav>
       <main>
         <div class="content-area">
@@ -158,6 +166,8 @@ export class SemanticRouterApp extends LitElement {
             <p>Manage your LLM configurations.</p>
           </div>
         `;
+      case 'config':
+        return html`<config-view></config-view>`;
       default:
         return html``;
     }
