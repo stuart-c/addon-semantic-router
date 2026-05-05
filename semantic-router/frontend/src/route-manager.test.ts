@@ -46,7 +46,7 @@ test('shows detail view when route is selected', async () => {
     await new Promise(resolve => setTimeout(resolve, 200));
     await el.updateComplete;
   
-    const heading = el.shadowRoot?.querySelector('.detail-header h1');
+    const heading = el.shadowRoot?.querySelector('.detail-header h2');
     expect(heading?.textContent).toBe('Test Route');
 
     const utterances = el.shadowRoot?.querySelectorAll('.utterance-item');

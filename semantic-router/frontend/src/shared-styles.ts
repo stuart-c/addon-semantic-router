@@ -208,41 +208,6 @@ export const sharedStyles = css`
     box-shadow: 0 0 0 3px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.15);
   }
 
-  /* Modals */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  .modal {
-    background-color: var(--surface-elevated);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    width: 100%;
-    max-width: 500px;
-    padding: 2.5rem;
-    box-shadow: var(--shadow-lg);
-    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 2.5rem;
-  }
-
   /* Badges */
   .badge {
     padding: 0.25rem 0.625rem;
