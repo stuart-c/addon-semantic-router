@@ -4,7 +4,7 @@ import { SemanticRouterTestTab } from './semantic-router-test-tab';
 
 // Mock fetch
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+vi.stubGlobal('fetch', mockFetch);
 
 beforeEach(() => {
   document.body.innerHTML = '<semantic-router-test-tab></semantic-router-test-tab>';
