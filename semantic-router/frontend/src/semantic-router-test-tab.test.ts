@@ -16,11 +16,11 @@ test('renders initial state correctly', async () => {
   await el.updateComplete;
   
   const textarea = el.shadowRoot?.querySelector('textarea');
-  const button = el.shadowRoot?.querySelector('button');
+  const button = el.shadowRoot?.querySelector('sr-button');
   
   expect(textarea).toBeTruthy();
   expect(button).toBeTruthy();
-  expect(button?.disabled).toBe(true); // Disabled because prompt is empty
+  expect(button?.hasAttribute('disabled')).toBe(true); // Disabled because prompt is empty
 });
 
 test('enables button when prompt is entered', async () => {
@@ -33,8 +33,8 @@ test('enables button when prompt is entered', async () => {
   
   await el.updateComplete;
   
-  const button = el.shadowRoot?.querySelector('button') as HTMLButtonElement;
-  expect(button.disabled).toBe(false);
+  const button = el.shadowRoot?.querySelector('sr-button') as HTMLElement;
+  expect(button.hasAttribute('disabled')).toBe(false);
 });
 
 test('calls API and displays response', async () => {
@@ -58,7 +58,7 @@ test('calls API and displays response', async () => {
   
   await el.updateComplete;
   
-  const button = el.shadowRoot?.querySelector('button') as HTMLButtonElement;
+  const button = el.shadowRoot?.querySelector('sr-button') as HTMLElement;
   button.click();
   
   await el.updateComplete; // Wait for loading state
@@ -97,7 +97,7 @@ test('displays error message on API failure', async () => {
   
   await el.updateComplete;
   
-  const button = el.shadowRoot?.querySelector('button') as HTMLButtonElement;
+  const button = el.shadowRoot?.querySelector('sr-button') as HTMLElement;
   button.click();
   
   await vi.waitUntil(() => el.shadowRoot?.querySelector('.error'));
