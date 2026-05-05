@@ -7,6 +7,7 @@ export const sharedStyles = css`
     width: 100%;
     overflow: hidden;
     color: var(--text-color);
+    background-color: var(--bg-color);
   }
 
   /* Layout */
@@ -214,7 +215,9 @@ export const sharedStyles = css`
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
