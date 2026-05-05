@@ -1,6 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { sharedStyles } from './shared-styles';
+import './components/sr-button';
+import './components/sr-badge';
+import './components/sr-form-group';
 
 @customElement('semantic-router-test-tab')
 export class SemanticRouterTestTab extends LitElement {
@@ -30,12 +33,6 @@ export class SemanticRouterTestTab extends LitElement {
         gap: 1.5rem;
       }
 
-      .input-section {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
       textarea {
         min-height: 120px;
         resize: vertical;
@@ -44,35 +41,6 @@ export class SemanticRouterTestTab extends LitElement {
       .actions {
         display: flex;
         justify-content: flex-end;
-      }
-
-      button {
-        padding: 0.75rem 2rem;
-        background-color: var(--primary-color);
-        color: white;
-        border: none;
-        border-radius: var(--border-radius);
-        font-weight: 600;
-        cursor: pointer;
-        transition: all var(--transition-speed);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      button:hover:not(:disabled) {
-        background-color: var(--primary-hover);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
-      }
-
-      button:active:not(:disabled) {
-        transform: translateY(0);
-      }
-
-      button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
       }
 
       .response-section {
@@ -107,7 +75,7 @@ export class SemanticRouterTestTab extends LitElement {
         margin: 0;
         white-space: pre-wrap;
         word-break: break-word;
-        font-family: 'Fira Code', monospace;
+        font-family: 'JetBrains Mono', monospace;
         font-size: 0.9rem;
         line-height: 1.5;
         color: var(--text-secondary);
@@ -143,8 +111,7 @@ export class SemanticRouterTestTab extends LitElement {
   render() {
     return html`
       <div class="test-container">
-        <div class="input-section">
-          <label for="prompt">Test Prompt</label>
+        <sr-form-group label="Test Prompt" description="Enter a query to see which route it matches and get the LLM response.">
           <textarea
             id="prompt"
             placeholder="Enter a prompt to test routing..."
@@ -152,12 +119,12 @@ export class SemanticRouterTestTab extends LitElement {
             @input="${(e: any) => this.prompt = e.target.value}"
             ?disabled="${this.loading}"
           ></textarea>
-        </div>
+        </sr-form-group>
 
         <div class="actions">
-          <button @click="${this._handleTest}" ?disabled="${this.loading || !this.prompt.trim()}">
+          <sr-button @click="${this._handleTest}" ?disabled="${this.loading || !this.prompt.trim()}">
             ${this.loading ? html`<span class="loader"></span> Testing...` : 'Run Test'}
-          </button>
+          </sr-button>
         </div>
 
         ${this.error ? html`<div class="error">${this.error}</div>` : ''}
@@ -167,8 +134,8 @@ export class SemanticRouterTestTab extends LitElement {
             <div class="response-header">
               <span class="response-title">API Response</span>
               <div class="metadata">
-                <span class="badge">Route: ${this.response.route || 'N/A'}</span>
-                <span class="badge">LLM: ${this.response.llm || 'N/A'}</span>
+                <sr-badge variant="info">Route: ${this.response.route || 'N/A'}</sr-badge>
+                <sr-badge variant="info">LLM: ${this.response.llm || 'N/A'}</sr-badge>
               </div>
             </div>
             <pre>${this.response.choices?.[0]?.message?.content || JSON.stringify(this.response, null, 2)}</pre>

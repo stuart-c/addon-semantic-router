@@ -1,6 +1,12 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { sharedStyles } from './shared-styles';
+import './components/sr-button';
+import './components/sr-badge';
+import './components/sr-modal';
+import './components/sr-form-group';
+import './components/sr-list-item';
+import './components/sr-empty-state';
 
 interface LLM {
   id: number;
@@ -36,35 +42,6 @@ export class LLMManager extends LitElement {
         flex: 1;
         overflow-y: auto;
         padding: 0.5rem;
-      }
-
-      .llm-item {
-        padding: 0.75rem 1rem;
-        border-radius: 6px;
-        cursor: pointer;
-        margin-bottom: 0.25rem;
-        transition: all 0.2s;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border: 1px solid transparent;
-      }
-
-      .llm-item:hover {
-        background: rgba(255, 255, 255, 0.05);
-      }
-
-      .llm-item.selected {
-        background: rgba(100, 108, 255, 0.1);
-        border-color: rgba(100, 108, 255, 0.3);
-        color: var(--primary-color);
-      }
-
-      .llm-name {
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
     `
   ];
@@ -174,24 +151,24 @@ export class LLMManager extends LitElement {
       <div class="sidebar">
         <div class="sidebar-header">
           <h2>LLMs</h2>
-          <button class="btn btn-ghost btn-icon" @click="${() => this.showAddLlmModal = true}" title="Add LLM">
+          <sr-button variant="ghost" iconOnly @click="${() => this.showAddLlmModal = true}" title="Add LLM">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-          </button>
+          </sr-button>
         </div>
         <div class="llm-list">
           ${this.llms.map(llm => html`
-            <div 
-              class="llm-item ${this.selectedLlmId === llm.id ? 'selected' : ''}"
+            <sr-list-item 
+              .selected="${this.selectedLlmId === llm.id}"
+              .title="${llm.name}"
               @click="${() => this.selectedLlmId = llm.id}"
             >
-              <div class="llm-name">${llm.name}</div>
-              <div class="badge ${llm.enabled ? 'badge-enabled' : 'badge-disabled'}">
+              <sr-badge slot="suffix" variant="${llm.enabled ? 'enabled' : 'disabled'}">
                 ${llm.enabled ? 'On' : 'Off'}
-              </div>
-            </div>
+              </sr-badge>
+            </sr-list-item>
           `)}
         </div>
       </div>
@@ -203,33 +180,30 @@ export class LLMManager extends LitElement {
               <h1 style="margin:0; font-size: 1.5rem;">${selectedLlm.name}</h1>
               <span style="font-size: 0.875rem; color: var(--text-secondary)">LLM ID: ${selectedLlm.id}</span>
             </div>
-            <button class="btn btn-danger" @click="${() => this.deleteLlm(selectedLlm.id)}">
+            <sr-button variant="danger" @click="${() => this.deleteLlm(selectedLlm.id)}">
               Delete LLM
-            </button>
+            </sr-button>
           </div>
 
           <div class="detail-body">
             <div class="section">
               <h3>General Configuration</h3>
-              <div class="form-group">
-                <label>LLM Name</label>
+              <sr-form-group label="LLM Name">
                 <input 
                   type="text" 
                   .value="${selectedLlm.name}" 
                   @change="${(e: any) => this.updateLlmConfig({ name: e.target.value })}"
                 >
-              </div>
-              <div class="form-group">
-                <label>API URL</label>
+              </sr-form-group>
+              <sr-form-group label="API URL" description="The full endpoint URL for the chat completions API">
                 <input 
                   type="text" 
                   .value="${selectedLlm.url}" 
                   @change="${(e: any) => this.updateLlmConfig({ url: e.target.value })}"
                   placeholder="https://api.openai.com/v1/chat/completions"
                 >
-              </div>
-              <div class="form-group">
-                <label>API Secret / Key</label>
+              </sr-form-group>
+              <sr-form-group label="API Secret / Key">
                 <input 
                   type="password" 
                   .value="${selectedLlm.secret}" 
@@ -238,25 +212,23 @@ export class LLMManager extends LitElement {
                   @change="${(e: any) => this.updateLlmConfig({ secret: e.target.value })}"
                   placeholder="Enter new secret to update"
                 >
-              </div>
-              <div class="form-group">
-                <label>Model Name</label>
+              </sr-form-group>
+              <sr-form-group label="Model Name">
                 <input 
                   type="text" 
                   .value="${selectedLlm.model || ''}" 
                   @change="${(e: any) => this.updateLlmConfig({ model: e.target.value })}"
                   placeholder="e.g. gpt-4o"
                 >
-              </div>
-              <div class="form-group">
-                <label>Timeout (seconds)</label>
+              </sr-form-group>
+              <sr-form-group label="Timeout (seconds)">
                 <input 
                   type="number" 
                   .value="${selectedLlm.timeout.toString()}" 
                   @change="${(e: any) => this.updateLlmConfig({ timeout: parseInt(e.target.value) })}"
                 >
-              </div>
-              <div class="form-group">
+              </sr-form-group>
+              <sr-form-group label="Status">
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                   <input 
                     type="checkbox" 
@@ -265,76 +237,72 @@ export class LLMManager extends LitElement {
                   >
                   Enabled
                 </label>
-              </div>
+              </sr-form-group>
             </div>
           </div>
         ` : html`
-          <div class="empty-state">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 1rem; opacity: 0.5;">
+          <sr-empty-state 
+            title="No LLM Selected" 
+            description="Select an LLM from the sidebar or create a new one to get started."
+          >
+            <svg slot="icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
-            <h2>No LLM Selected</h2>
-            <p>Select an LLM from the sidebar or create a new one.</p>
-            <button class="btn btn-primary" @click="${() => this.showAddLlmModal = true}" style="margin-top: 1rem;">
+            <sr-button slot="actions" @click="${() => this.showAddLlmModal = true}">
               Add First LLM
-            </button>
-          </div>
+            </sr-button>
+          </sr-empty-state>
         `}
       </div>
 
-      ${this.showAddLlmModal ? html`
-        <div class="modal-overlay" @click="${() => this.showAddLlmModal = false}">
-          <div class="modal" @click="${(e: Event) => e.stopPropagation()}">
-            <h2>Add New LLM</h2>
-            <div class="form-group">
-              <label>LLM Name</label>
-              <input 
-                type="text" 
-                placeholder="e.g. OpenAI GPT-4"
-                .value="${this.newLlm.name}"
-                @input="${(e: any) => this.newLlm.name = e.target.value}"
-              >
-            </div>
-            <div class="form-group">
-              <label>API URL</label>
-              <input 
-                type="text" 
-                placeholder="https://api.openai.com/v1/chat/completions"
-                .value="${this.newLlm.url}"
-                @input="${(e: any) => this.newLlm.url = e.target.value}"
-              >
-            </div>
-            <div class="form-group">
-              <label>API Secret / Key</label>
-              <input 
-                type="password" 
-                placeholder="sk-..."
-                .value="${this.newLlm.secret}"
-                @input="${(e: any) => this.newLlm.secret = e.target.value}"
-              >
-            </div>
-            <div class="form-group">
-              <label>Model Name</label>
-              <input 
-                type="text" 
-                placeholder="gpt-4"
-                .value="${this.newLlm.model}"
-                @input="${(e: any) => this.newLlm.model = e.target.value}"
-              >
-            </div>
-            <div class="modal-actions">
-              <button class="btn btn-ghost" @click="${() => this.showAddLlmModal = false}">Cancel</button>
-              <button 
-                class="btn btn-primary" 
-                ?disabled="${!this.newLlm.name || !this.newLlm.url}"
-                @click="${this.addLlm}"
-              >
-                Add LLM
-              </button>
-            </div>
-          </div>
+      <sr-modal 
+        .open="${this.showAddLlmModal}" 
+        title="Add New LLM"
+        @close="${() => this.showAddLlmModal = false}"
+      >
+        <sr-form-group label="LLM Name">
+          <input 
+            type="text" 
+            placeholder="e.g. OpenAI GPT-4"
+            .value="${this.newLlm.name}"
+            @input="${(e: any) => this.newLlm.name = e.target.value}"
+          >
+        </sr-form-group>
+        <sr-form-group label="API URL">
+          <input 
+            type="text" 
+            placeholder="https://api.openai.com/v1/chat/completions"
+            .value="${this.newLlm.url}"
+            @input="${(e: any) => this.newLlm.url = e.target.value}"
+          >
+        </sr-form-group>
+        <sr-form-group label="API Secret / Key">
+          <input 
+            type="password" 
+            placeholder="sk-..."
+            .value="${this.newLlm.secret}"
+            @input="${(e: any) => this.newLlm.secret = e.target.value}"
+          >
+        </sr-form-group>
+        <sr-form-group label="Model Name">
+          <input 
+            type="text" 
+            placeholder="gpt-4"
+            .value="${this.newLlm.model}"
+            @input="${(e: any) => this.newLlm.model = e.target.value}"
+          >
+        </sr-form-group>
+
+        <div slot="actions">
+          <sr-button variant="ghost" @click="${() => this.showAddLlmModal = false}">Cancel</sr-button>
+          <sr-button 
+            ?disabled="${!this.newLlm.name || !this.newLlm.url}"
+            @click="${this.addLlm}"
+          >
+            Add LLM
+          </sr-button>
         </div>
-      ` : ''}
+      </sr-modal>
     `;
   }
 }
