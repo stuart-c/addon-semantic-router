@@ -55,24 +55,32 @@ export class RouteManager extends LitElement {
       .utterance-list {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 1rem;
       }
 
       .utterance-item {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.75rem;
         align-items: center;
-        background: rgba(255, 255, 255, 0.03);
-        padding: 0.5rem 0.75rem;
-        border-radius: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background-color: var(--bg-color);
+        padding: 0.75rem 1.25rem;
+        border-radius: var(--border-radius-sm);
+        border: 1px solid var(--border-color);
+        transition: var(--transition-speed);
+      }
+
+      .utterance-item:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
       }
 
       .utterance-input {
         flex: 1;
         background: transparent !important;
         border: none !important;
-        padding: 0.25rem !important;
+        padding: 0 !important;
+        font-size: 0.9375rem;
+        color: var(--text-color);
       }
     `
   ];
@@ -268,8 +276,8 @@ export class RouteManager extends LitElement {
         ${selectedRoute ? html`
           <div class="detail-header">
             <div>
-              <h1 style="margin:0; font-size: 1.5rem;">${selectedRoute.name}</h1>
-              <span style="font-size: 0.875rem; color: var(--text-secondary)">Route ID: ${selectedRoute.id}</span>
+              <h2>${selectedRoute.name}</h2>
+              <span style="font-size: 0.8125rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Route ID: ${selectedRoute.id}</span>
             </div>
             <sr-button variant="danger" @click="${() => this.deleteRoute(selectedRoute.id)}">
               Delete Route

@@ -9,26 +9,29 @@ export class SRFormGroup extends LitElement {
   static styles = css`
     :host {
       display: block;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.75rem;
     }
 
     .label-wrapper {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
-      margin-bottom: 0.5rem;
+      gap: 0.375rem;
+      margin-bottom: 0.75rem;
     }
 
     label {
       display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text-secondary, #a0a0a0);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
     }
 
     .description {
-      font-size: 0.75rem;
-      color: rgba(160, 160, 160, 0.6);
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.4;
     }
   `;
 

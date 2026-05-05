@@ -16,9 +16,9 @@ export class SemanticRouterApp extends LitElement {
     sharedStyles,
     css`
       header {
-        padding: 1rem 2rem;
-        background-color: var(--surface-color);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1.5rem 2.5rem;
+        background-color: var(--surface-elevated);
+        border-bottom: 1px solid var(--border-color);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -26,31 +26,33 @@ export class SemanticRouterApp extends LitElement {
 
       h1 {
         margin: 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-        background: linear-gradient(45deg, #646cff, #acb1ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+        color: var(--primary-color);
       }
 
       nav {
         display: flex;
-        gap: 1rem;
-        padding: 0 2rem;
+        gap: 2rem;
+        padding: 0 2.5rem;
         background-color: var(--surface-color);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
       }
 
       .tab {
-        padding: 1rem 0.5rem;
+        padding: 1.25rem 0;
         cursor: pointer;
         border-bottom: 2px solid transparent;
-        transition: all var(--transition-speed);
+        transition: var(--transition-speed);
         color: var(--text-secondary);
-        font-weight: 500;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
+        user-select: none;
       }
 
       .tab:hover {
@@ -64,17 +66,19 @@ export class SemanticRouterApp extends LitElement {
 
       main {
         flex: 1;
-        padding: 2rem;
+        padding: 2.5rem;
         overflow-y: auto;
+        background-color: var(--bg-color);
       }
 
       .content-area {
         background-color: var(--surface-color);
         border-radius: var(--border-radius);
-        min-height: 400px;
-        height: calc(100vh - 180px); /* Adjust based on header/nav height */
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        animation: fadeIn 0.4s ease-out;
+        min-height: 500px;
+        height: calc(100vh - 220px);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
         display: flex;
         flex-direction: column;

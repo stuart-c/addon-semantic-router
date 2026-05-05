@@ -11,32 +11,32 @@ export class SRBadge extends LitElement {
     }
 
     .badge {
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 600;
+      padding: 0.25rem 0.625rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.02em;
     }
 
     .enabled {
-      background: rgba(46, 213, 115, 0.2);
-      color: #2ed573;
+      background-color: hsla(145, 63%, 42%, 0.15);
+      color: hsl(145, 63%, 62%);
     }
 
     .disabled {
-      background: rgba(255, 71, 87, 0.2);
-      color: #ff4757;
+      background-color: hsla(0, 84%, 60%, 0.15);
+      color: hsl(0, 84%, 60%);
     }
 
     .info {
-      background: rgba(100, 108, 255, 0.2);
-      color: var(--primary-color, #646cff);
+      background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.15);
+      color: var(--primary-color);
     }
 
     .warning {
-      background: rgba(255, 159, 67, 0.2);
-      color: #ff9f43;
+      background-color: hsla(35, 100%, 50%, 0.15);
+      color: hsl(35, 100%, 65%);
     }
   `;
 

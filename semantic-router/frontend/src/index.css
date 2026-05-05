@@ -5,23 +5,44 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark;
+  color: hsla(0, 0%, 100%, 0.9);
+  background-color: hsl(220, 15%, 8%);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --primary-color: #646cff;
-  --primary-hover: #535bf2;
-  --bg-color: #1a1a1a;
-  --surface-color: #2a2a2a;
-  --text-color: #ffffff;
-  --text-secondary: #a0a0a0;
-  --border-radius: 8px;
-  --transition-speed: 0.3s;
+  /* Brand Colors */
+  --primary-h: 245;
+  --primary-s: 100%;
+  --primary-l: 70%;
+  --primary-color: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+  --primary-hover: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 10%));
+  --primary-active: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 20%));
+
+  /* Surface Colors */
+  --bg-color: hsl(220, 15%, 8%);
+  --surface-color: hsl(220, 15%, 12%);
+  --surface-elevated: hsl(220, 15%, 16%);
+  
+  /* Text Colors */
+  --text-color: hsla(0, 0%, 100%, 0.95);
+  --text-secondary: hsla(0, 0%, 100%, 0.6);
+  --text-tertiary: hsla(0, 0%, 100%, 0.4);
+
+  /* Border & Depth */
+  --border-color: hsla(0, 0%, 100%, 0.08);
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.4);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-speed: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {

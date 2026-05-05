@@ -56,28 +56,31 @@ export class LogViewer extends LitElement {
     }
 
     .toolbar {
-      padding: 0.75rem 1rem;
+      padding: 1rem 1.5rem;
       background-color: var(--surface-color);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid var(--border-color);
       display: flex;
-      gap: 1rem;
+      gap: 1.25rem;
       align-items: center;
+      box-shadow: var(--shadow-sm);
+      z-index: 30;
     }
 
     .search-input {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      padding: 0.5rem 0.75rem;
-      color: white;
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-sm);
+      padding: 0.625rem 1rem;
+      color: var(--text-color);
       font-size: 0.875rem;
-      width: 300px;
+      width: 320px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: var(--transition-speed);
     }
 
     .search-input:focus {
       border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
     }
 
     .main-container {
@@ -91,7 +94,7 @@ export class LogViewer extends LitElement {
     .grid-container {
       flex: 1;
       overflow: auto;
-      background: #1e1e1e;
+      background-color: var(--bg-color);
     }
 
     table {
@@ -104,26 +107,27 @@ export class LogViewer extends LitElement {
     th {
       position: sticky;
       top: 0;
-      background: #2d2d2d;
-      padding: 0.75rem;
+      background-color: var(--surface-color);
+      padding: 1rem;
       text-align: left;
       font-size: 0.75rem;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-secondary);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid var(--border-color);
       z-index: 10;
       user-select: none;
     }
 
     th.sortable {
       cursor: pointer;
+      transition: var(--transition-fast);
     }
 
     th.sortable:hover {
-      background: #363636;
-      color: white;
+      background-color: var(--surface-elevated);
+      color: var(--text-color);
     }
 
     .resizer {
@@ -134,69 +138,76 @@ export class LogViewer extends LitElement {
       height: 100%;
       cursor: col-resize;
       z-index: 11;
+      transition: var(--transition-fast);
     }
 
     .resizer:hover, .resizer.active {
-      background: var(--primary-color);
+      background-color: var(--primary-color);
     }
 
     td {
-      padding: 0.6rem 0.75rem;
+      padding: 0.875rem 1rem;
       font-size: 0.875rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--border-color);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       color: var(--text-secondary);
+      transition: var(--transition-fast);
     }
 
     tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
-      color: white;
+      background-color: hsla(0, 0%, 100%, 0.02);
+      color: var(--text-color);
     }
 
     tr.selected td {
-      background: rgba(100, 108, 255, 0.1);
-      color: white;
-      border-left: 2px solid var(--primary-color);
+      background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
+      color: var(--text-color);
+      border-bottom-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.2);
     }
 
     .split-divider {
-      height: 4px;
-      background: #2d2d2d;
+      height: 2px;
+      background-color: var(--border-color);
       cursor: row-resize;
-      transition: background 0.2s;
+      transition: var(--transition-fast);
       z-index: 20;
     }
 
     .split-divider:hover, .split-divider.active {
-      background: var(--primary-color);
+      height: 4px;
+      background-color: var(--primary-color);
     }
 
     .detail-view {
-      background: #1a1a1a;
+      background-color: var(--surface-color);
       overflow: auto;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid var(--border-color);
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2);
     }
 
     .detail-content {
-      padding: 1.5rem;
+      padding: 2.5rem;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+      animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .detail-card {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 8px;
-      padding: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background-color: var(--surface-elevated);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
     }
 
     .detail-card h3 {
       margin-top: 0;
-      margin-bottom: 0.75rem;
-      font-size: 0.875rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 700;
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -208,10 +219,16 @@ export class LogViewer extends LitElement {
       word-break: break-all;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.8125rem;
-      color: #e0e0e0;
-      background: #000;
-      padding: 0.75rem;
-      border-radius: 4px;
+      color: var(--text-color);
+      background-color: var(--bg-color);
+      padding: 1rem;
+      border-radius: var(--border-radius-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .split-divider.active {

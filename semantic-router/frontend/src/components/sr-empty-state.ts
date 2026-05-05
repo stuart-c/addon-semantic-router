@@ -13,34 +13,46 @@ export class SREmptyState extends LitElement {
       align-items: center;
       justify-content: center;
       height: 100%;
-      color: var(--text-secondary, #a0a0a0);
+      color: var(--text-secondary);
       text-align: center;
-      padding: 2rem;
+      padding: 3rem;
+      animation: fadeIn 0.4s ease-out;
     }
 
     .icon-wrapper {
-      margin-bottom: 1.5rem;
-      opacity: 0.4;
-      color: var(--primary-color, #646cff);
+      margin-bottom: 2rem;
+      color: var(--text-tertiary);
+      background-color: var(--surface-color);
+      padding: 2rem;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
     }
 
     h2 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--text-color, #ffffff);
+      margin: 0 0 0.75rem 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-color);
     }
 
     p {
-      margin: 0 0 1.5rem 0;
-      font-size: 0.9375rem;
-      max-width: 300px;
-      line-height: 1.5;
+      margin: 0 0 2rem 0;
+      font-size: 1rem;
+      max-width: 360px;
+      line-height: 1.6;
+      color: var(--text-secondary);
     }
 
     .actions {
       display: flex;
       gap: 1rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   `;
 
