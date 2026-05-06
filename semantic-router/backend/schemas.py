@@ -22,8 +22,9 @@ class LLMBase(BaseModel):
 
 
 class LLMModelsRequest(BaseModel):
-    url: str
+    url: Optional[str] = None
     secret: Optional[str] = None
+    id: Optional[int] = None
 
 
 class LLMCreate(LLMBase):

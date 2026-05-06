@@ -185,6 +185,47 @@ def test_fetch_llm_models():
         assert "Internal error" in resp.text
 
 
+def test_fetch_llm_models_with_id():
+    # Setup: Create an LLM with a secret
+    create_resp = client.post(
+        "/api/llm",
+        json={
+            "name": "Test LLM",
+            "url": "http://stored-url",
+            "secret": "stored-secret",
+        },
+    )
+    llm_id = create_resp.json()["id"]
+
+    # Mock httpx
+    with patch("httpx.AsyncClient.get") as mock_get:
+        mock_resp = MagicMock(status_code=200)
+        mock_resp.json.return_value = {"data": [{"id": "m1"}]}
+        mock_get.return_value = mock_resp
+
+        # Call with ID and empty secret/url
+        resp = client.post(
+            "/api/llm/models",
+            json={"id": llm_id},
+        )
+        assert resp.status_code == 200
+        assert resp.json() == ["m1"]
+
+        args, kwargs = mock_get.call_args
+        assert args[0] == "http://stored-url/v1/models"
+        assert kwargs["headers"]["Authorization"] == "Bearer stored-secret"
+
+        # Call with ID and override URL
+        resp = client.post(
+            "/api/llm/models",
+            json={"id": llm_id, "url": "http://new-url/"},
+        )
+        assert resp.status_code == 200
+        args, kwargs = mock_get.call_args
+        assert args[0] == "http://new-url/v1/models"
+        assert kwargs["headers"]["Authorization"] == "Bearer stored-secret"
+
+
 # --- Route Tests ---
 
 
