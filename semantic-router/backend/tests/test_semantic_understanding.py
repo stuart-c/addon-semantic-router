@@ -80,10 +80,13 @@ def test_example_utterances(manager):
     # Skip if using Tfidf as it's not truly semantic and may fail exact matches
     # if the vocabulary is too small or keywords overlap.
     from semantic_router.encoders import TfidfEncoder
+
     print(f"DEBUG: Encoder type: {type(manager._encoder)}")
     print(f"DEBUG: TfidfEncoder type: {TfidfEncoder}")
 
-    if isinstance(manager._encoder, TfidfEncoder) or "TfidfEncoder" in str(type(manager._encoder)):
+    if isinstance(manager._encoder, TfidfEncoder) or "TfidfEncoder" in str(
+        type(manager._encoder)
+    ):
         pytest.skip("Skipping example utterances test for TfidfEncoder.")
 
     test_cases = [
