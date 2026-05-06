@@ -145,8 +145,8 @@ export class LLMManager extends LitElement {
     }
   }
 
-  async fetchAvailableModels(url: string, secret: string) {
-    if (!url) {
+  async fetchAvailableModels(url: string, secret: string, id?: number) {
+    if (!url && !id) {
       this.error = 'API URL is required to fetch models.';
       return;
     }
@@ -157,7 +157,11 @@ export class LLMManager extends LitElement {
       const res = await fetch('/api/llm/models', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, secret: secret === '***' ? '' : secret })
+        body: JSON.stringify({ 
+          url, 
+          secret: secret === '***' ? '' : secret,
+          id
+        })
       });
       if (!res.ok) {
         const error = await res.json();
@@ -396,7 +400,7 @@ export class LLMManager extends LitElement {
                   >
                   <sr-button 
                     variant="secondary" 
-                    @click="${() => this.fetchAvailableModels(selectedLlm.url, selectedLlm.secret)}" 
+                    @click="${() => this.fetchAvailableModels(selectedLlm.url, selectedLlm.secret, selectedLlm.id)}" 
                     ?disabled="${this.fetchingModels || !selectedLlm.url}"
                   >
                     ${this.fetchingModels ? 'Loading...' : 'Fetch'}

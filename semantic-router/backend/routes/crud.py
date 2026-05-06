@@ -18,8 +18,24 @@ def get_llms(db: Session = Depends(get_db)):
 
 
 @router.post("/llm/models")
-async def fetch_llm_models(request: schemas.LLMModelsRequest):
-    base_url = request.url
+async def fetch_llm_models(
+    request: schemas.LLMModelsRequest, db: Session = Depends(get_db)
+):
+    url = request.url
+    secret = request.secret
+
+    if request.id:
+        db_llm = crud.llm.get(db, id=request.id)
+        if db_llm:
+            if not url:
+                url = db_llm.url
+            if not secret:
+                secret = db_llm.secret
+
+    if not url:
+        raise HTTPException(status_code=400, detail="URL is required")
+
+    base_url = url
     if base_url.endswith("/chat/completions"):
         base_url = base_url[:-17] + "/models"
     elif not base_url.endswith("/models"):
@@ -29,8 +45,8 @@ async def fetch_llm_models(request: schemas.LLMModelsRequest):
             base_url += "/v1/models"
 
     headers = {}
-    if request.secret:
-        headers["Authorization"] = f"Bearer {request.secret}"
+    if secret:
+        headers["Authorization"] = f"Bearer {secret}"
 
     try:
         async with httpx.AsyncClient() as client:
