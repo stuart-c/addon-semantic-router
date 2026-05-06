@@ -37,7 +37,50 @@ test('enables button when prompt is entered', async () => {
   expect(button.hasAttribute('disabled')).toBe(false);
 });
 
-test('calls API and displays response', async () => {
+test('calls Analyze API and displays resolution', async () => {
+  const mockResolution = {
+    name: 'greeting',
+    score: 0.95
+  };
+  
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => mockResolution,
+  });
+
+  const el = document.querySelector('semantic-router-test-tab') as SemanticRouterTestTab;
+  await el.updateComplete;
+  
+  const textarea = el.shadowRoot?.querySelector('textarea') as HTMLTextAreaElement;
+  textarea.value = 'hi';
+  textarea.dispatchEvent(new Event('input'));
+  
+  await el.updateComplete;
+  
+  // First button is "Analyze Route"
+  const buttons = el.shadowRoot?.querySelectorAll('sr-button');
+  const analyzeButton = buttons?.[0] as HTMLElement;
+  analyzeButton.click();
+  
+  await el.updateComplete;
+  
+  expect(mockFetch).toHaveBeenCalledWith('/api/test/resolve', expect.objectContaining({
+    method: 'POST',
+    body: JSON.stringify({
+      prompt: 'hi'
+    })
+  }));
+  
+  await vi.waitUntil(() => !el.shadowRoot?.querySelector('.loader'));
+  await el.updateComplete;
+  
+  const responseArea = el.shadowRoot?.querySelector('.response-section');
+  expect(responseArea).toBeTruthy();
+  expect(responseArea?.textContent).toContain('Match: greeting');
+  expect(responseArea?.textContent).toContain('Score: 0.9500');
+});
+
+test('calls Query API and displays full response', async () => {
   const mockResponse = {
     route: 'greeting',
     llm: 'gpt-4',
@@ -58,8 +101,10 @@ test('calls API and displays response', async () => {
   
   await el.updateComplete;
   
-  const button = el.shadowRoot?.querySelector('sr-button') as HTMLElement;
-  button.click();
+  // Second button is "Run Full Test"
+  const buttons = el.shadowRoot?.querySelectorAll('sr-button');
+  const testButton = buttons?.[1] as HTMLElement;
+  testButton.click();
   
   await el.updateComplete; // Wait for loading state
   

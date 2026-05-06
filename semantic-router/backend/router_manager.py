@@ -124,5 +124,16 @@ class RouteLayerManager:
             logger.error(f"Error during semantic routing: {e}")
             return None
 
+    def resolve(self, query_text: str):
+        """Perform full semantic resolution and return the RouteChoice."""
+        if self._router is None:
+            return None
+
+        try:
+            return self._router(query_text)
+        except Exception as e:
+            logger.error(f"Error during semantic resolution: {e}")
+            return None
+
 
 router_manager = RouteLayerManager()

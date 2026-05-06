@@ -214,3 +214,12 @@ async def _call_llm(
         timeout=llm.timeout or 30.0,
     )
     return response
+
+
+@router.post("/api/test/resolve", response_model=schemas.ResolveResponse)
+async def resolve_prompt(request: schemas.ResolveRequest):
+    """Resolve a prompt to a route without calling an LLM."""
+    result = router_manager.resolve(request.prompt)
+    if result:
+        return schemas.ResolveResponse(name=result.name, score=result.score)
+    return schemas.ResolveResponse(name=None, score=0.0)
