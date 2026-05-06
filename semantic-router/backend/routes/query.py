@@ -181,6 +181,13 @@ async def _call_llm(
     client: httpx.AsyncClient, llm: models.LLM, request: schemas.ChatCompletionRequest
 ):
     """Helper to call an LLM with its specific configuration."""
+    model_to_use = llm.model.strip() if llm.model else None
+
+    # Override the model if configured for this LLM
+    if model_to_use:
+        logger.info(f"Overriding request model '{request.model}' with '{model_to_use}'")
+        request.model = model_to_use
+
     headers = {}
     if llm.secret:
         headers["Authorization"] = f"Bearer {llm.secret}"
@@ -188,12 +195,17 @@ async def _call_llm(
     # Convert request to dict, ensuring we exclude None values
     payload = request.model_dump(exclude_none=True)
 
-    # Override the model if configured for this LLM
-    if llm.model:
-        payload["model"] = llm.model
+    # Support {model} placeholder in URL
+    url = llm.url
+    if "{model}" in url and request.model:
+        url = url.replace("{model}", request.model)
+
+    logger.debug(
+        f"Calling LLM {llm.name} at {url} with payload model: {payload.get('model')}"
+    )
 
     response = await client.post(
-        llm.url,
+        url,
         json=payload,
         headers=headers,
         timeout=llm.timeout or 30.0,
