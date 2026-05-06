@@ -179,7 +179,6 @@ export class SemanticRouterTestTab extends LitElement {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'default',
           messages: [
             {
               role: 'user',

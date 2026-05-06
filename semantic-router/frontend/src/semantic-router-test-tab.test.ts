@@ -66,7 +66,6 @@ test('calls API and displays response', async () => {
   expect(mockFetch).toHaveBeenCalledWith('/query', expect.objectContaining({
     method: 'POST',
     body: JSON.stringify({
-      model: 'default',
       messages: [{ role: 'user', content: 'hi' }]
     })
   }));
