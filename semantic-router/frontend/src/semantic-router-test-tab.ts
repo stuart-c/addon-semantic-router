@@ -14,6 +14,9 @@ export class SemanticRouterTestTab extends LitElement {
   private response: any = null;
 
   @state()
+  private resolution: any = null;
+
+  @state()
   private loading = false;
 
   @state()
@@ -141,18 +144,38 @@ export class SemanticRouterTestTab extends LitElement {
           ></textarea>
         </sr-form-group>
 
-        <div class="actions">
+        <div class="actions" style="gap: 1rem;">
+          <sr-button variant="secondary" @click="${this._handleResolve}" ?disabled="${this.loading || !this.prompt.trim()}">
+            ${this.loading ? html`<span class="loader"></span> Analyzing...` : 'Analyze Route'}
+          </sr-button>
           <sr-button @click="${this._handleTest}" ?disabled="${this.loading || !this.prompt.trim()}">
-            ${this.loading ? html`<span class="loader"></span> Testing...` : 'Run Test'}
+            ${this.loading ? html`<span class="loader"></span> Testing...` : 'Run Full Test'}
           </sr-button>
         </div>
 
         ${this.error ? html`<div class="error">${this.error}</div>` : ''}
 
+        ${this.resolution ? html`
+          <div class="response-section">
+            <div class="response-header">
+              <span class="response-title">Semantic Resolution</span>
+              <div class="metadata">
+                <sr-badge variant="${this.resolution.name ? 'success' : 'warning'}">
+                  Match: ${this.resolution.name || 'None'}
+                </sr-badge>
+                <sr-badge variant="info">
+                  Score: ${this.resolution.score?.toFixed(4) || '0.0000'}
+                </sr-badge>
+              </div>
+            </div>
+            <p>The prompt was resolved using the current Semantic Router configuration. A match score represents the cosine similarity between the prompt and the route's utterances.</p>
+          </div>
+        ` : ''}
+
         ${this.response ? html`
           <div class="response-section">
             <div class="response-header">
-              <span class="response-title">API Response</span>
+              <span class="response-title">Full API Response</span>
               <div class="metadata">
                 <sr-badge variant="info">Route: ${this.response.route || 'N/A'}</sr-badge>
                 <sr-badge variant="info">LLM: ${this.response.llm || 'N/A'}</sr-badge>
@@ -171,6 +194,7 @@ export class SemanticRouterTestTab extends LitElement {
     this.loading = true;
     this.error = '';
     this.response = null;
+    this.resolution = null;
 
     try {
       const res = await fetch('/query', {
@@ -194,6 +218,38 @@ export class SemanticRouterTestTab extends LitElement {
       }
 
       this.response = await res.json();
+    } catch (e: any) {
+      this.error = e.message || 'An unexpected error occurred';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  private async _handleResolve() {
+    if (!this.prompt.trim()) return;
+
+    this.loading = true;
+    this.error = '';
+    this.response = null;
+    this.resolution = null;
+
+    try {
+      const res = await fetch('/api/test/resolve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: this.prompt,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `HTTP error! status: ${res.status}`);
+      }
+
+      this.resolution = await res.json();
     } catch (e: any) {
       this.error = e.message || 'An unexpected error occurred';
     } finally {

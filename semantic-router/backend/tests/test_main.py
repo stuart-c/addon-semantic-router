@@ -738,3 +738,27 @@ def test_query_route_model_from_llm_config():
         # Verify 'model' WAS sent in the payload (from LLM config)
         args, kwargs = mock_post.call_args
         assert kwargs["json"]["model"] == "llm-config-model"
+
+
+def test_resolve_prompt_route():
+    # Setup
+    with patch("backend.router_manager.router_manager.resolve") as mock_resolve:
+        # 1. Match case
+        mock_result = MagicMock()
+        mock_result.name = "test_route"
+        mock_result.score = 0.85
+        mock_resolve.return_value = mock_result
+
+        response = client.post("/api/test/resolve", json={"prompt": "test prompt"})
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] == "test_route"
+        assert data["score"] == 0.85
+
+        # 2. No match case
+        mock_resolve.return_value = None
+        response = client.post("/api/test/resolve", json={"prompt": "unknown"})
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] is None
+        assert data["score"] == 0.0

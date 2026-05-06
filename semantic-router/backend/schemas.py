@@ -182,3 +182,12 @@ class ChatCompletionResponse(BaseModel):
     # Custom fields for Semantic Router
     route: Optional[str] = None
     llm: Optional[str] = None
+
+
+class ResolveRequest(BaseModel):
+    prompt: str
+
+
+class ResolveResponse(BaseModel):
+    name: Optional[str]
+    score: float
