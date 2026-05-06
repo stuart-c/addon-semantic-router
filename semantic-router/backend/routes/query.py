@@ -5,6 +5,7 @@ import uuid
 import json
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import schemas, models, crud
@@ -125,9 +126,12 @@ async def semantic_query(
                 if target_llm == fallback_llm or not fallback_llm:
                     if isinstance(e, httpx.HTTPStatusError):
                         resp_data = e.response.json()
+                        if isinstance(resp_data, dict):
+                            resp_data["route"] = route_name
+                            resp_data["llm"] = llm_name
                         error_msg = f"Status {e.response.status_code}"
-                        return schemas.ChatCompletionResponse(
-                            **resp_data, route=route_name, llm=llm_name
+                        return JSONResponse(
+                            status_code=e.response.status_code, content=resp_data
                         )
                     error_msg = str(e)
                     if isinstance(e, HTTPException):
@@ -152,6 +156,14 @@ async def semantic_query(
                 except Exception as fe:
                     error_msg = f"Both failed: {str(fe)}"
                     logger.error(f"Fallback LLM {fallback_llm.name} also failed: {fe}")
+                    if isinstance(fe, httpx.HTTPStatusError):
+                        resp_data = fe.response.json()
+                        if isinstance(resp_data, dict):
+                            resp_data["route"] = route_name
+                            resp_data["llm"] = llm_name
+                        return JSONResponse(
+                            status_code=fe.response.status_code, content=resp_data
+                        )
                     raise HTTPException(status_code=502, detail=error_msg)
 
     except HTTPException as he:
