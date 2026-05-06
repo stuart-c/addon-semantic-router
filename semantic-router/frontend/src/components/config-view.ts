@@ -25,7 +25,7 @@ export class ConfigView extends LitElement {
     sharedStyles,
     css`
       :host {
-        display: block;
+        display: flex;
         animation: fadeIn 0.4s ease-out;
       }
 
@@ -176,7 +176,8 @@ export class ConfigView extends LitElement {
     }
 
     return html`
-      <div class="config-card">
+      <div class="main-content">
+        <div class="config-card">
         <h2>Global Configuration</h2>
         
         <div class="form-group">
@@ -233,6 +234,7 @@ export class ConfigView extends LitElement {
             ${this.isSaving ? 'Saving...' : 'Save Configuration'}
           </button>
         </div>
+      </div>
       </div>
     `;
   }

@@ -52,9 +52,11 @@ export class SemanticRouterApp extends LitElement {
 
       main {
         flex: 1;
+        display: flex;
+        flex-direction: column;
         padding: 2.5rem;
-        overflow-y: auto;
         background-color: var(--bg-color);
+        overflow: hidden;
       }
 
       .content-area {
