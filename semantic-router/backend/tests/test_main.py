@@ -138,6 +138,53 @@ def test_llm_secret_masking():
     assert create_empty.json()["secret"] == ""
 
 
+def test_fetch_llm_models():
+    # Mock httpx to test the /llm/models endpoint
+    with patch("httpx.AsyncClient.get") as mock_get:
+        # 1. Success case
+        mock_resp = MagicMock(status_code=200)
+        mock_resp.json.return_value = {"data": [{"id": "model-1"}, {"id": "model-2"}]}
+        mock_get.return_value = mock_resp
+
+        resp = client.post(
+            "/api/llm/models",
+            json={"url": "http://test/v1/chat/completions", "secret": "s"},
+        )
+        assert resp.status_code == 200
+        assert resp.json() == ["model-1", "model-2"]
+
+        args, kwargs = mock_get.call_args
+        assert args[0] == "http://test/v1/models"
+        assert kwargs["headers"]["Authorization"] == "Bearer s"
+
+        # 2. Endswith / slash case
+        resp = client.post("/api/llm/models", json={"url": "http://test/"})
+        assert resp.status_code == 200
+        args, kwargs = mock_get.call_args
+        assert args[0] == "http://test/v1/models"
+
+        # 3. Normal URL case
+        resp = client.post("/api/llm/models", json={"url": "http://test"})
+        assert resp.status_code == 200
+        args, kwargs = mock_get.call_args
+        assert args[0] == "http://test/v1/models"
+
+        # 4. HTTP Error case
+        mock_err_resp = MagicMock(status_code=500)
+        mock_err_resp.raise_for_status.side_effect = httpx.HTTPError("Network Error")
+        mock_get.return_value = mock_err_resp
+
+        resp = client.post("/api/llm/models", json={"url": "http://test"})
+        assert resp.status_code == 502
+        assert "Failed to fetch models" in resp.text
+
+        # 5. General Exception case
+        mock_get.side_effect = Exception("General Error")
+        resp = client.post("/api/llm/models", json={"url": "http://test"})
+        assert resp.status_code == 500
+        assert "Internal error" in resp.text
+
+
 # --- Route Tests ---
 
 

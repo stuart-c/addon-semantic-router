@@ -1,3 +1,4 @@
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -14,6 +15,35 @@ router = APIRouter()
 @router.get("/llm", response_model=List[schemas.LLM])
 def get_llms(db: Session = Depends(get_db)):
     return crud.llm.get_multi(db)
+
+
+@router.post("/llm/models")
+async def fetch_llm_models(request: schemas.LLMModelsRequest):
+    base_url = request.url
+    if base_url.endswith("/chat/completions"):
+        base_url = base_url[:-17] + "/models"
+    elif not base_url.endswith("/models"):
+        if base_url.endswith("/"):
+            base_url += "v1/models"
+        else:
+            base_url += "/v1/models"
+
+    headers = {}
+    if request.secret:
+        headers["Authorization"] = f"Bearer {request.secret}"
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(base_url, headers=headers, timeout=10.0)
+            response.raise_for_status()
+            data = response.json()
+            if "data" in data and isinstance(data["data"], list):
+                return [m.get("id") for m in data["data"] if "id" in m]
+            return []
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch models: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
 
 @router.post("/llm", response_model=schemas.LLM, status_code=status.HTTP_201_CREATED)
