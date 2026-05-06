@@ -183,9 +183,12 @@ async def _call_llm(
     """Helper to call an LLM with its specific configuration."""
     model_to_use = llm.model.strip() if llm.model else None
 
-    # Override the model if configured for this LLM
+    # Set or override the model if configured for this LLM
     if model_to_use:
-        logger.info(f"Overriding request model '{request.model}' with '{model_to_use}'")
+        if request.model and request.model != model_to_use:
+            logger.info(
+                f"Overriding request model '{request.model}' with '{model_to_use}'"
+            )
         request.model = model_to_use
 
     headers = {}

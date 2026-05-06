@@ -146,7 +146,7 @@ class ChatMessage(BaseModel):
 
 
 class ChatCompletionRequest(BaseModel):
-    model: str
+    model: Optional[str] = None
     messages: List[ChatMessage]
     temperature: Optional[float] = 1.0
     top_p: Optional[float] = 1.0
@@ -175,7 +175,7 @@ class ChatCompletionResponse(BaseModel):
     id: str
     object: str = "chat.completion"
     created: int
-    model: str
+    model: Optional[str] = None
     choices: List[ChatCompletionResponseChoice]
     usage: ChatCompletionUsage
     # Custom fields for Semantic Router

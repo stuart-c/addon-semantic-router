@@ -616,3 +616,84 @@ def test_env_logging():
     # Test update_log_level directly for coverage
     logging_utils.update_log_level("error")
     assert logging.getLogger().level == logging.ERROR
+
+
+def test_query_route_no_model():
+    # Setup: Create an LLM with NO model set and set as default
+    llm_id = client.post(
+        "/api/llm", json={"name": "No Model LLM", "url": "http://test.ai/v1"}
+    ).json()["id"]
+    client.put("/api/config", json={"default_llm": llm_id})
+
+    with patch("httpx.AsyncClient.post") as mock_post:
+        mock_post.return_value = MagicMock(status_code=200)
+        mock_post.return_value.json.return_value = get_mock_llm_response()
+
+        # Send request WITHOUT model
+        response = client.post(
+            "/query",
+            json={
+                "messages": [{"role": "user", "content": "hello"}],
+            },
+        )
+        assert response.status_code == 200
+
+        # Verify 'model' was NOT sent in the payload
+        args, kwargs = mock_post.call_args
+        assert "model" not in kwargs["json"]
+
+
+def test_query_route_model_in_request():
+    # Setup: Create an LLM with NO model set and set as default
+    llm_id = client.post(
+        "/api/llm", json={"name": "No Model LLM", "url": "http://test.ai/v1"}
+    ).json()["id"]
+    client.put("/api/config", json={"default_llm": llm_id})
+
+    with patch("httpx.AsyncClient.post") as mock_post:
+        mock_post.return_value = MagicMock(status_code=200)
+        mock_post.return_value.json.return_value = get_mock_llm_response()
+
+        # Send request WITH model
+        response = client.post(
+            "/query",
+            json={
+                "model": "request-model",
+                "messages": [{"role": "user", "content": "hello"}],
+            },
+        )
+        assert response.status_code == 200
+
+        # Verify 'model' WAS sent in the payload
+        args, kwargs = mock_post.call_args
+        assert kwargs["json"]["model"] == "request-model"
+
+
+def test_query_route_model_from_llm_config():
+    # Setup: Create an LLM WITH a model set and set as default
+    llm_id = client.post(
+        "/api/llm",
+        json={
+            "name": "Model LLM",
+            "url": "http://test.ai/v1",
+            "model": "llm-config-model",
+        },
+    ).json()["id"]
+    client.put("/api/config", json={"default_llm": llm_id})
+
+    with patch("httpx.AsyncClient.post") as mock_post:
+        mock_post.return_value = MagicMock(status_code=200)
+        mock_post.return_value.json.return_value = get_mock_llm_response()
+
+        # Send request WITHOUT model
+        response = client.post(
+            "/query",
+            json={
+                "messages": [{"role": "user", "content": "hello"}],
+            },
+        )
+        assert response.status_code == 200
+
+        # Verify 'model' WAS sent in the payload (from LLM config)
+        args, kwargs = mock_post.call_args
+        assert kwargs["json"]["model"] == "llm-config-model"
