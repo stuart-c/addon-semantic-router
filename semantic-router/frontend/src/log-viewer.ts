@@ -169,28 +169,44 @@ export class LogViewer extends LitElement {
     }
 
     .split-divider {
+      height: 12px;
+      cursor: row-resize;
+      display: flex;
+      align-items: center;
+      z-index: 20;
+      margin-top: -6px;
+      margin-bottom: -6px;
+    }
+
+    .split-divider-line {
+      width: 100%;
       height: 1px;
       background-color: var(--border-color);
-      cursor: row-resize;
       transition: var(--transition-fast);
-      z-index: 20;
-      position: relative;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* Thicker hit area for the divider */
-    .split-divider::after {
-      content: '';
-      position: absolute;
-      top: -6px;
-      bottom: -6px;
-      left: 0;
-      right: 0;
-      z-index: 21;
+    .drag-handle {
+      width: 32px;
+      height: 4px;
+      background-color: var(--border-color);
+      border-radius: 2px;
+      transition: var(--transition-fast);
     }
 
-    .split-divider:hover, .split-divider.active {
-      height: 3px;
+    .split-divider:hover .split-divider-line, 
+    .split-divider.active .split-divider-line {
+      height: 2px;
       background-color: var(--primary-color);
+    }
+
+    .split-divider:hover .drag-handle,
+    .split-divider.active .drag-handle {
+      background-color: var(--primary-color);
+      width: 48px;
     }
 
     .detail-view {
@@ -199,7 +215,12 @@ export class LogViewer extends LitElement {
       border-top: 1px solid var(--border-color);
       box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.05);
       min-height: 100px;
-      max-height: 70%;
+      max-height: 85%;
+      transition: height var(--transition-fast);
+    }
+
+    .detail-view.resizing {
+      transition: none !important;
     }
 
     .detail-content {
@@ -332,16 +353,14 @@ export class LogViewer extends LitElement {
     this.isResizingSplit = true;
     this.startY = e.clientY;
     
-    // Capture current actual height if it's currently auto
     const detailView = this.shadowRoot?.querySelector('.detail-view');
     if (detailView) {
       this.startHeight = detailView.getBoundingClientRect().height;
-      if (this.splitHeight === null) {
-        this.splitHeight = this.startHeight;
-      }
     } else {
       this.startHeight = this.splitHeight || 300;
     }
+    
+    this.splitHeight = this.startHeight;
     
     document.body.style.cursor = 'row-resize';
     document.body.style.userSelect = 'none';
@@ -357,8 +376,9 @@ export class LogViewer extends LitElement {
     } else if (this.isResizingSplit) {
       const delta = this.startY - e.clientY;
       const newHeight = this.startHeight + delta;
-      // Constraint: bottom section between 100px and 80% of window
-      this.splitHeight = Math.max(100, Math.min(window.innerHeight * 0.8, newHeight));
+      
+      const maxHeight = window.innerHeight * 0.8;
+      this.splitHeight = Math.max(100, Math.min(maxHeight, newHeight));
     }
   };
 
@@ -440,10 +460,14 @@ export class LogViewer extends LitElement {
         <div 
           class="split-divider ${this.isResizingSplit ? 'active' : ''}"
           @mousedown="${this.handleSplitResizeStart}"
-        ></div>
+        >
+          <div class="split-divider-line">
+            <div class="drag-handle"></div>
+          </div>
+        </div>
 
         <div 
-          class="detail-view" 
+          class="detail-view ${this.isResizingSplit ? 'resizing' : ''}" 
           style="${this.splitHeight ? `height: ${this.splitHeight}px` : 'height: auto'}"
         >
           ${selectedLog ? html`
