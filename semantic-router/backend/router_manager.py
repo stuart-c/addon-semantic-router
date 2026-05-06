@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Optional
+from typing import Any, Optional
 from sqlalchemy.orm import Session
 
 from semantic_router import Route
@@ -16,18 +16,20 @@ logger = logging.getLogger(__name__)
 class RouteLayerManager:
     _instance: Optional["RouteLayerManager"] = None
     _router: Optional[SemanticRouter] = None
-    _encoder: Optional[any] = None
+    _encoder: Optional[Any] = None
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(RouteLayerManager, cls).__new__(cls)
         return cls._instance
 
-    def initialize(self, db: Session):
+    def initialize(self, db: Session, encoder=None):
         """Initialize the RouteLayer with data from the database."""
         logger.info("Initializing Semantic Router Layer...")
         try:
-            if self._encoder is None:
+            if encoder is not None:
+                self._encoder = encoder
+            elif self._encoder is None:
                 # Initialize encoder only once
                 try:
                     # In Home Assistant, /data is persistent. For local dev, use ./data.
@@ -43,8 +45,14 @@ class RouteLayerManager:
                     )
                     logger.info("FastEmbedEncoder (ONNX) initialized.")
                 except Exception as e:
-                    logger.error(f"Failed to initialize FastEmbedEncoder: {e}")
-                    self._encoder = None
+                    logger.warning(
+                        f"Failed to initialize FastEmbedEncoder: {e}. "
+                        "Falling back to TfidfEncoder."
+                    )
+                    from semantic_router.encoders import TfidfEncoder
+
+                    self._encoder = TfidfEncoder()
+                    logger.info("TfidfEncoder initialized as fallback.")
 
             # Fetch enabled routes from DB
             db_routes = db.query(models.Route).filter(models.Route.enabled).all()
@@ -59,8 +67,32 @@ class RouteLayerManager:
 
             if router_routes:
                 self._router = SemanticRouter(
-                    encoder=self._encoder, routes=router_routes
+                    encoder=self._encoder,
+                    routes=router_routes,
                 )
+
+                # Manually populate index to ensure readiness
+                logger.info("Populating SemanticRouter index...")
+                utterances = []
+                route_names = []
+                for r in router_routes:
+                    for u in r.utterances:
+                        utterances.append(u)
+                        route_names.append(r.name)
+
+                if utterances:
+                    # TfidfEncoder needs to be fit before use
+                    if hasattr(self._encoder, "fit"):
+                        logger.info("Fitting TfidfEncoder...")
+                        self._encoder.fit(utterances)
+
+                    embeddings = self._encoder(utterances)
+                    self._router.index.add(
+                        embeddings=embeddings,
+                        routes=route_names,
+                        utterances=utterances,
+                    )
+
                 logger.info(
                     f"SemanticRouter initialized with {len(router_routes)} routes."
                 )
