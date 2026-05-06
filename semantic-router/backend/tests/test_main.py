@@ -453,7 +453,7 @@ def test_query_route_target_is_fallback_fail():
             "/query",
             json={"model": "m", "messages": [{"role": "user", "content": "x"}]},
         )
-        assert response.status_code == 200
+        assert response.status_code == 400
         assert response.json()["choices"][0]["message"]["content"] == "error from llm"
 
 
