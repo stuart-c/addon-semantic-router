@@ -32,6 +32,8 @@ Always use the provided scripts for common tasks:
 - **Run Development Server**: `bash scripts/run_dev.sh` (Starts FastAPI at port 8000)
 - **Run Tests & Linting**: `bash scripts/run_tests.sh`
 
+**Command Execution**: Ensure the virtual environment (`venv`) is used for all commands (e.g., `black`, `npm`, `pytest`, etc.), rather than running them on the local machine directly. Always activate the venv or use the provided scripts to avoid polluting the global environment.
+
 ### Running Tests
 **MANDATORY**: Ensure all tests and linting pass before finalizing changes. Goal: maintain 100% unit test code coverage.
 ```bash
@@ -39,9 +41,9 @@ bash scripts/run_tests.sh
 ```
 
 ### Git Workflow
-- **Branching**: Update the currently chosen branch. **Do not** create new branches, worktrees, or PRs.
+- **Branching**: Update the currently chosen branch. **Do not** create new branches or worktrees.
 - **Commits**: Use descriptive, conventional commit messages (e.g., `feat: ...`, `fix: ...`, `refactor: ...`).
-- **Submission**: Once completed, provide a PR title and description for the user to use when they create the PR.
+- **Submission**: A pull request (PR) should be created for all changes using the `gh` tool (e.g., `gh pr create`).
 - **Restrictions**: **Do not** perform `git push` or `git pull`.
 
 ## Home Assistant Integration
