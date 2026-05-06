@@ -746,7 +746,7 @@ def test_resolve_prompt_route():
         # 1. Match case
         mock_result = MagicMock()
         mock_result.name = "test_route"
-        mock_result.score = 0.85
+        mock_result.similarity_score = 0.85
         mock_resolve.return_value = mock_result
 
         response = client.post("/api/test/resolve", json={"prompt": "test prompt"})

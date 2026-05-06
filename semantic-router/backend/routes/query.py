@@ -221,5 +221,7 @@ async def resolve_prompt(request: schemas.ResolveRequest):
     """Resolve a prompt to a route without calling an LLM."""
     result = router_manager.resolve(request.prompt)
     if result:
-        return schemas.ResolveResponse(name=result.name, score=result.score)
+        return schemas.ResolveResponse(
+            name=result.name, score=result.similarity_score or 0.0
+        )
     return schemas.ResolveResponse(name=None, score=0.0)
