@@ -18,7 +18,10 @@ fi
 
 # Run the container in detached mode, exposing port 8000
 echo "Starting container..."
-docker run -d --name semantic-router-dev -p 8000:8000 "$IMAGE_NAME"
+mkdir -p data
+docker run -d --name semantic-router-dev \
+  -v "$(pwd)/data:/data" \
+  -p 8000:8000 "$IMAGE_NAME"
 
 # Setup cleanup on exit
 cleanup() {
