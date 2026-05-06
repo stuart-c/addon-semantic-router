@@ -188,6 +188,10 @@ async def _call_llm(
     # Convert request to dict, ensuring we exclude None values
     payload = request.model_dump(exclude_none=True)
 
+    # Override the model if configured for this LLM
+    if llm.model:
+        payload["model"] = llm.model
+
     response = await client.post(
         llm.url,
         json=payload,
