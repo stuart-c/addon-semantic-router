@@ -25,6 +25,9 @@ export class LLMManager extends LitElement {
   @state() private error: string | null = null;
   @state() private confirmingDelete = false;
 
+  @state() private availableModels: string[] = [];
+  @state() private fetchingModels = false;
+
   // New LLM Form State
   @state() private isAdding = false;
   @state() private newLlm = {
@@ -142,6 +145,35 @@ export class LLMManager extends LitElement {
     }
   }
 
+  async fetchAvailableModels(url: string, secret: string) {
+    if (!url) {
+      this.error = 'API URL is required to fetch models.';
+      return;
+    }
+    
+    this.fetchingModels = true;
+    this.error = null;
+    try {
+      const res = await fetch('/api/llm/models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, secret: secret === '***' ? '' : secret })
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.detail || 'Failed to fetch models');
+      }
+      this.availableModels = await res.json();
+      if (this.availableModels.length === 0) {
+        this.error = 'No models found from this endpoint.';
+      }
+    } catch (err) {
+      this.error = (err as Error).message;
+    } finally {
+      this.fetchingModels = false;
+    }
+  }
+
   async updateLlmConfig(updates: Partial<LLM>) {
     if (!this.selectedLlmId) return;
     this.error = null;
@@ -182,6 +214,7 @@ export class LLMManager extends LitElement {
     this.isAdding = true;
     this.selectedLlmId = null;
     this.error = null;
+    this.availableModels = [];
   }
 
   private _handleCancelAdding() {
@@ -286,12 +319,26 @@ export class LLMManager extends LitElement {
                 >
               </sr-form-group>
               <sr-form-group label="Model Name">
-                <input 
-                  type="text" 
-                  placeholder="gpt-4"
-                  .value="${this.newLlm.model}"
-                  @input="${(e: any) => this.newLlm.model = e.target.value}"
-                >
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <input 
+                    type="text" 
+                    list="models-list-new"
+                    placeholder="e.g. gpt-4o"
+                    .value="${this.newLlm.model}"
+                    @input="${(e: any) => this.newLlm.model = e.target.value}"
+                    style="flex: 1;"
+                  >
+                  <sr-button 
+                    variant="secondary" 
+                    @click="${() => this.fetchAvailableModels(this.newLlm.url, this.newLlm.secret)}" 
+                    ?disabled="${this.fetchingModels || !this.newLlm.url}"
+                  >
+                    ${this.fetchingModels ? 'Loading...' : 'Fetch'}
+                  </sr-button>
+                </div>
+                <datalist id="models-list-new">
+                  ${this.availableModels.map(m => html`<option value="${m}"></option>`)}
+                </datalist>
               </sr-form-group>
             </div>
           </div>
@@ -338,12 +385,26 @@ export class LLMManager extends LitElement {
                 >
               </sr-form-group>
               <sr-form-group label="Model Name">
-                <input 
-                  type="text" 
-                  .value="${selectedLlm.model || ''}" 
-                  @change="${(e: any) => this.updateLlmConfig({ model: e.target.value })}"
-                  placeholder="e.g. gpt-4o"
-                >
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <input 
+                    type="text" 
+                    list="models-list-${selectedLlm.id}"
+                    .value="${selectedLlm.model || ''}" 
+                    @change="${(e: any) => this.updateLlmConfig({ model: e.target.value })}"
+                    placeholder="e.g. gpt-4o"
+                    style="flex: 1;"
+                  >
+                  <sr-button 
+                    variant="secondary" 
+                    @click="${() => this.fetchAvailableModels(selectedLlm.url, selectedLlm.secret)}" 
+                    ?disabled="${this.fetchingModels || !selectedLlm.url}"
+                  >
+                    ${this.fetchingModels ? 'Loading...' : 'Fetch'}
+                  </sr-button>
+                </div>
+                <datalist id="models-list-${selectedLlm.id}">
+                  ${this.availableModels.map(m => html`<option value="${m}"></option>`)}
+                </datalist>
               </sr-form-group>
               <sr-form-group label="Timeout (seconds)">
                 <input 

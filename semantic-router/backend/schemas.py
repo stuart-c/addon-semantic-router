@@ -21,6 +21,11 @@ class LLMBase(BaseModel):
         return v
 
 
+class LLMModelsRequest(BaseModel):
+    url: str
+    secret: Optional[str] = None
+
+
 class LLMCreate(LLMBase):
     pass
 
