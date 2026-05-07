@@ -1,5 +1,5 @@
 name: "Semantic Router"
-version: "0.1.0"
+version: "0.1.1"
 slug: "semantic_router"
 description: "A semantic router for LLM applications"
 url: "https://github.com/stuart-c/addon-semantic-router"
