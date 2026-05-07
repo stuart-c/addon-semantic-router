@@ -7,7 +7,7 @@ import './components/sr-form-group';
 import '@awesome.me/webawesome/dist/components/textarea/textarea.js';
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
 import '@awesome.me/webawesome/dist/components/checkbox/checkbox.js';
-import '@awesome.me/webawesome/dist/components/alert/alert.js';
+import '@awesome.me/webawesome/dist/components/callout/callout.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/divider/divider.js';
 
@@ -152,11 +152,11 @@ export class SemanticRouterTestTab extends LitElement {
         </div>
 
         ${this.error ? html`
-          <wa-alert variant="danger" open closable @wa-after-hide="${() => this.error = ''}">
+          <wa-callout variant="danger" open closable @wa-after-hide="${() => this.error = ''}">
             <wa-icon slot="icon" name="exclamation-octagon"></wa-icon>
             <strong>Testing Error</strong><br />
             ${this.error}
-          </wa-alert>
+          </wa-callout>
         ` : ''}
 
         ${this.resolution ? html`
@@ -172,11 +172,11 @@ export class SemanticRouterTestTab extends LitElement {
                 </sr-badge>
               </div>
             </div>
-            <wa-alert variant="${this.resolution.name ? 'success' : 'neutral'}" open>
+            <wa-callout variant="${this.resolution.name ? 'success' : 'neutral'}" open>
               <wa-icon slot="icon" name="${this.resolution.name ? 'check-circle' : 'info-circle'}"></wa-icon>
               The prompt was resolved using the current Semantic Router configuration. 
               A match score represents the cosine similarity between the prompt and the route's utterances.
-            </wa-alert>
+            </wa-callout>
           </div>
         ` : ''}
 

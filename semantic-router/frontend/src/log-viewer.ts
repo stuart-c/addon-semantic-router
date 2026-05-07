@@ -509,7 +509,9 @@ export class LogViewer extends LitElement {
               ${selectedLog.failure_reason ? html`
                 <div class="detail-card">
                   <h3>Failure Reason</h3>
-                  <pre style="color: #ff4757;">${selectedLog.failure_reason}</pre>
+                  <wa-callout variant="danger">
+                    ${selectedLog.failure_reason}
+                  </wa-callout>
                 </div>
               ` : ''}
             </div>

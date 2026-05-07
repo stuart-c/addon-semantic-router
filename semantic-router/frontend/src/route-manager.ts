@@ -11,7 +11,7 @@ import '@awesome.me/webawesome/dist/components/select/select.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/checkbox/checkbox.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
-import '@awesome.me/webawesome/dist/components/alert/alert.js';
+import '@awesome.me/webawesome/dist/components/callout/callout.js';
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
 
 interface RouteUtterance {
@@ -351,11 +351,11 @@ export class RouteManager extends LitElement {
       <div class="main-content">
         ${this.error ? html`
           <div style="padding: 2.5rem 2.5rem 0 2.5rem; max-width: 900px; margin: 0 auto; width: 100%;">
-            <wa-alert variant="danger" open closable @wa-after-hide="${() => this.error = null}">
+            <wa-callout variant="danger" open closable @wa-after-hide="${() => this.error = null}">
               <wa-icon slot="icon" name="exclamation-octagon"></wa-icon>
               <strong>Error</strong><br />
               ${this.error}
-            </wa-alert>
+            </wa-callout>
           </div>
         ` : ''}
 
