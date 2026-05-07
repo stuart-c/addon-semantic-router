@@ -155,8 +155,7 @@ async def semantic_query(
                     )
                 except Exception as fe:
                     error_msg = f"Both failed: {str(fe)}"
-                    logger.error(f"Fallback LLM {fallback_llm.name} also failed: {fe}")
-                    if isinstance(fe, httpx.HTTPStatusError):
+                    if hasattr(fe, "response") and hasattr(fe.response, "json"):
                         resp_data = fe.response.json()
                         if isinstance(resp_data, dict):
                             resp_data["route"] = route_name

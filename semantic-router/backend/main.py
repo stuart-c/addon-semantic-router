@@ -52,13 +52,18 @@ app.include_router(routes.query.router)
 
 app.include_router(routes.frontend.router)
 
-# Mount static files if dist directory exists
-frontend_dist = os.path.join(os.path.dirname(__file__), "../frontend/dist")
-if os.path.exists(frontend_dist):
-    app.mount(
-        "/assets",
-        StaticFiles(directory=os.path.join(frontend_dist, "assets")),
-        name="assets",
-    )
-    # Also mount root files like favicon.ico, etc if they exist in dist
-    app.mount("/static", StaticFiles(directory=frontend_dist), name="static")
+
+def setup_static_files(app: FastAPI):
+    """Setup static file mounting for the frontend."""
+    frontend_dist = os.path.join(os.path.dirname(__file__), "../frontend/dist")
+    if os.path.exists(frontend_dist):
+        app.mount(
+            "/assets",
+            StaticFiles(directory=os.path.join(frontend_dist, "assets")),
+            name="assets",
+        )
+        # Also mount root files like favicon.ico, etc if they exist in dist
+        app.mount("/static", StaticFiles(directory=frontend_dist), name="static")
+
+
+setup_static_files(app)
