@@ -43,9 +43,9 @@ describe('LogViewer', () => {
   });
 
   test('filters logs', async () => {
-    const searchInput = element.shadowRoot?.querySelector('.search-input') as HTMLInputElement;
+    const searchInput = element.shadowRoot?.querySelector('wa-input') as any;
     searchInput.value = 'non-existent';
-    searchInput.dispatchEvent(new Event('input'));
+    searchInput.dispatchEvent(new CustomEvent('wa-input'));
     
     await element.updateComplete;
     const rows = element.shadowRoot?.querySelectorAll('tbody tr');

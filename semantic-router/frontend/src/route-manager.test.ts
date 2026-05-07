@@ -50,5 +50,9 @@ test('shows detail view when route is selected', async () => {
     expect(heading?.textContent).toBe('Test Route');
 
     const utterances = el.shadowRoot?.querySelectorAll('.utterance-item');
+    // One existing utterance + one empty one for new entry
     expect(utterances?.length).toBe(2);
+    
+    const inputs = el.shadowRoot?.querySelectorAll('wa-input');
+    expect(inputs?.length).toBeGreaterThanOrEqual(2);
 });

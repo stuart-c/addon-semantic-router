@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { sharedStyles } from '../shared-styles';
+import '@awesome.me/webawesome/dist/components/button/button.js';
 
 @customElement('sr-button')
 export class SRButton extends LitElement {
@@ -9,32 +9,39 @@ export class SRButton extends LitElement {
   @property({ type: Boolean }) iconOnly = false;
   @property({ type: String }) type: 'button' | 'submit' = 'button';
 
-  static styles = [
-    sharedStyles,
-    css`
+  static styles = css`
     :host {
       display: inline-block;
     }
 
-    .btn {
+    wa-button {
       width: 100%;
     }
 
-    .btn.icon-only {
-      padding: 0.625rem;
+    wa-button[icon-only] {
       width: auto;
     }
-  `];
+  `;
 
   render() {
+    let waVariant: any = 'default';
+    if (this.variant === 'primary') waVariant = 'primary';
+    if (this.variant === 'danger') waVariant = 'danger';
+    
+    // Ghost variant mapping
+    const isGhost = this.variant === 'ghost';
+
     return html`
-      <button 
+      <wa-button 
         type="${this.type}"
-        class="btn btn-${this.variant} ${this.iconOnly ? 'icon-only' : ''}" 
+        variant="${waVariant}"
+        ?outline="${this.variant === 'secondary'}"
+        ?ghost="${isGhost}"
         ?disabled="${this.disabled}"
+        ?circle="${this.iconOnly}"
       >
         <slot></slot>
-      </button>
+      </wa-button>
     `;
   }
 }

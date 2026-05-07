@@ -6,6 +6,11 @@ import './components/sr-badge';
 import './components/sr-form-group';
 import './components/sr-list-item';
 import './components/sr-empty-state';
+import '@awesome.me/webawesome/dist/components/input/input.js';
+import '@awesome.me/webawesome/dist/components/select/select.js';
+import '@awesome.me/webawesome/dist/components/option/option.js';
+import '@awesome.me/webawesome/dist/components/checkbox/checkbox.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 
 interface RouteUtterance {
   id: number;
@@ -65,7 +70,7 @@ export class RouteManager extends LitElement {
         gap: 0.75rem;
         align-items: center;
         background-color: var(--bg-color);
-        padding: 0.75rem 1.25rem;
+        padding: 0.5rem 1rem;
         border-radius: var(--border-radius-sm);
         border: 1px solid var(--border-color);
         transition: var(--transition-speed);
@@ -78,11 +83,6 @@ export class RouteManager extends LitElement {
 
       .utterance-input {
         flex: 1;
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-        font-size: 0.9375rem;
-        color: var(--text-color);
       }
 
       .error-banner {
@@ -97,6 +97,10 @@ export class RouteManager extends LitElement {
         display: flex;
         justify-content: space-between;
         align-items: center;
+      }
+
+      wa-input, wa-select {
+        width: 100%;
       }
     `
   ];
@@ -375,24 +379,22 @@ export class RouteManager extends LitElement {
           <div class="detail-body">
             <div class="section fade-in">
               <h3>General Configuration</h3>
-              <sr-form-group label="Route Name">
-                <input 
-                  type="text" 
-                  placeholder="e.g. Greeting, Technical Support"
-                  .value="${this.newRouteName}"
-                  @input="${(e: any) => this.newRouteName = e.target.value}"
-                >
-              </sr-form-group>
-              <sr-form-group label="Assign LLM">
-                <select 
-                  @change="${(e: any) => this.newRouteLlmId = parseInt(e.target.value)}"
-                >
-                  <option value="" disabled ?selected="${this.newRouteLlmId === null}">Select an LLM</option>
-                  ${this.llms.map(llm => html`
-                    <option value="${llm.id}">${llm.name}</option>
-                  `)}
-                </select>
-              </sr-form-group>
+              <wa-input 
+                label="Route Name"
+                placeholder="e.g. Greeting, Technical Support"
+                .value="${this.newRouteName}"
+                @wa-input="${(e: any) => this.newRouteName = e.target.value}"
+              ></wa-input>
+              <wa-select 
+                label="Assign LLM"
+                placeholder="Select an LLM"
+                value="${this.newRouteLlmId ? String(this.newRouteLlmId) : ''}"
+                @wa-change="${(e: any) => this.newRouteLlmId = parseInt(e.target.value)}"
+              >
+                ${this.llms.map(llm => html`
+                  <wa-option value="${llm.id}">${llm.name}</wa-option>
+                `)}
+              </wa-select>
             </div>
           </div>
         ` : selectedRoute ? html`
@@ -412,35 +414,28 @@ export class RouteManager extends LitElement {
           <div class="detail-body">
             <div class="section">
               <h3>General Configuration</h3>
-              <sr-form-group label="Route Name">
-                <input 
-                  type="text" 
-                  .value="${selectedRoute.name}" 
-                  @change="${(e: any) => this.updateRouteConfig({ name: e.target.value })}"
-                >
-              </sr-form-group>
-              <sr-form-group label="Assigned LLM">
-                <select 
-                  .value="${selectedRoute.llm.toString()}"
-                  @change="${(e: any) => this.updateRouteConfig({ llm: parseInt(e.target.value) })}"
-                >
-                  ${this.llms.map(llm => html`
-                    <option value="${llm.id}" ?selected="${llm.id === selectedRoute.llm}">
-                      ${llm.name} (${llm.model || 'Default Model'})
-                    </option>
-                  `)}
-                </select>
-              </sr-form-group>
-              <sr-form-group label="Status">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                  <input 
-                    type="checkbox" 
-                    ?checked="${selectedRoute.enabled}"
-                    @change="${(e: any) => this.updateRouteConfig({ enabled: e.target.checked })}"
-                  >
-                  Enabled
-                </label>
-              </sr-form-group>
+              <wa-input 
+                label="Route Name"
+                .value="${selectedRoute.name}" 
+                @wa-change="${(e: any) => this.updateRouteConfig({ name: e.target.value })}"
+              ></wa-input>
+              <wa-select 
+                label="Assigned LLM"
+                value="${selectedRoute.llm.toString()}"
+                @wa-change="${(e: any) => this.updateRouteConfig({ llm: parseInt(e.target.value) })}"
+              >
+                ${this.llms.map(llm => html`
+                  <wa-option value="${llm.id}">
+                    ${llm.name} (${llm.model || 'Default Model'})
+                  </wa-option>
+                `)}
+              </wa-select>
+              <wa-checkbox 
+                ?checked="${selectedRoute.enabled}"
+                @wa-change="${(e: any) => this.updateRouteConfig({ enabled: e.target.checked })}"
+              >
+                Enabled
+              </wa-checkbox>
             </div>
 
             <div class="section">
@@ -450,12 +445,11 @@ export class RouteManager extends LitElement {
               <div class="utterance-list">
                 ${selectedRoute.utterances.map(utt => html`
                   <div class="utterance-item fade-in">
-                    <input 
-                      type="text" 
+                    <wa-input 
                       class="utterance-input"
                       .value="${utt.utterance}"
-                      @change="${(e: any) => this.updateUtterance(selectedRoute.id, utt.id, e.target.value)}"
-                    >
+                      @wa-change="${(e: any) => this.updateUtterance(selectedRoute.id, utt.id, e.target.value)}"
+                    ></wa-input>
                     <sr-button variant="ghost" iconOnly @click="${() => this.deleteUtterance(selectedRoute.id, utt.id)}">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M3 6h18"></path>
@@ -466,14 +460,13 @@ export class RouteManager extends LitElement {
                 `)}
                 
                 <div class="utterance-item" style="border-style: dashed; background-color: transparent;">
-                  <input 
-                    type="text" 
+                  <wa-input 
                     class="utterance-input"
                     placeholder="Type a new utterance and press enter..."
                     .value="${this.newUtterance}"
-                    @input="${(e: any) => this.newUtterance = e.target.value}"
+                    @wa-input="${(e: any) => this.newUtterance = e.target.value}"
                     @keydown="${(e: KeyboardEvent) => e.key === 'Enter' && this.addUtterance(selectedRoute.id)}"
-                  >
+                  ></wa-input>
                   <sr-button variant="ghost" iconOnly @click="${() => this.addUtterance(selectedRoute.id)}" ?disabled="${!this.newUtterance}">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <line x1="12" y1="5" x2="12" y2="19"></line>

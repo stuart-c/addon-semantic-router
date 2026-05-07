@@ -6,6 +6,10 @@ import './components/sr-badge';
 import './components/sr-form-group';
 import './components/sr-list-item';
 import './components/sr-empty-state';
+import '@awesome.me/webawesome/dist/components/input/input.js';
+import '@awesome.me/webawesome/dist/components/checkbox/checkbox.js';
+import '@awesome.me/webawesome/dist/components/select/select.js';
+import '@awesome.me/webawesome/dist/components/option/option.js';
 
 interface LLM {
   id: number;
@@ -60,6 +64,11 @@ export class LLMManager extends LitElement {
         display: flex;
         justify-content: space-between;
         align-items: center;
+      }
+
+      wa-input, wa-select {
+        width: 100%;
+        margin-bottom: 1.25rem;
       }
     `
   ];
@@ -298,52 +307,63 @@ export class LLMManager extends LitElement {
           <div class="detail-body">
             <div class="section fade-in">
               <h3>General Configuration</h3>
-              <sr-form-group label="LLM Name">
-                <input 
-                  type="text" 
-                  placeholder="e.g. OpenAI GPT-4"
-                  .value="${this.newLlm.name}"
-                  @input="${(e: any) => this.newLlm.name = e.target.value}"
+              <wa-input 
+                label="LLM Name"
+                placeholder="e.g. OpenAI GPT-4"
+                .value="${this.newLlm.name}"
+                @wa-input="${(e: any) => this.newLlm.name = e.target.value}"
+              ></wa-input>
+              
+              <wa-input 
+                label="API URL"
+                help-text="The full endpoint URL for the chat completions API"
+                placeholder="https://api.openai.com/v1/chat/completions"
+                .value="${this.newLlm.url}"
+                @wa-input="${(e: any) => this.newLlm.url = e.target.value}"
+              ></wa-input>
+
+              <wa-input 
+                label="API Secret / Key"
+                type="password" 
+                placeholder="sk-..."
+                .value="${this.newLlm.secret}"
+                @wa-input="${(e: any) => this.newLlm.secret = e.target.value}"
+                password-toggle
+              ></wa-input>
+
+              <div style="display: flex; gap: 0.5rem; align-items: flex-end; margin-bottom: 1.25rem;">
+                <wa-input 
+                  label="Model Name"
+                  placeholder="e.g. gpt-4o"
+                  .value="${this.newLlm.model}"
+                  @wa-input="${(e: any) => this.newLlm.model = e.target.value}"
+                  style="flex: 1; margin-bottom: 0;"
                 >
-              </sr-form-group>
-              <sr-form-group label="API URL" description="The full endpoint URL for the chat completions API">
-                <input 
-                  type="text" 
-                  placeholder="https://api.openai.com/v1/chat/completions"
-                  .value="${this.newLlm.url}"
-                  @input="${(e: any) => this.newLlm.url = e.target.value}"
+                  <wa-option slot="list" value=""></wa-option>
+                  ${this.availableModels.map(m => html`<wa-option value="${m}">${m}</wa-option>`)}
+                </wa-input>
+                <sr-button 
+                  variant="secondary" 
+                  @click="${() => this.fetchAvailableModels(this.newLlm.url, this.newLlm.secret)}" 
+                  ?disabled="${this.fetchingModels || !this.newLlm.url}"
                 >
-              </sr-form-group>
-              <sr-form-group label="API Secret / Key">
-                <input 
-                  type="password" 
-                  placeholder="sk-..."
-                  .value="${this.newLlm.secret}"
-                  @input="${(e: any) => this.newLlm.secret = e.target.value}"
-                >
-              </sr-form-group>
-              <sr-form-group label="Model Name">
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <input 
-                    type="text" 
-                    list="models-list-new"
-                    placeholder="e.g. gpt-4o"
-                    .value="${this.newLlm.model}"
-                    @input="${(e: any) => this.newLlm.model = e.target.value}"
-                    style="flex: 1;"
-                  >
-                  <sr-button 
-                    variant="secondary" 
-                    @click="${() => this.fetchAvailableModels(this.newLlm.url, this.newLlm.secret)}" 
-                    ?disabled="${this.fetchingModels || !this.newLlm.url}"
-                  >
-                    ${this.fetchingModels ? 'Loading...' : 'Fetch'}
-                  </sr-button>
-                </div>
-                <datalist id="models-list-new">
-                  ${this.availableModels.map(m => html`<option value="${m}"></option>`)}
-                </datalist>
-              </sr-form-group>
+                  ${this.fetchingModels ? 'Loading...' : 'Fetch'}
+                </sr-button>
+              </div>
+
+              <wa-input 
+                label="Timeout (seconds)"
+                type="number"
+                .value="${String(this.newLlm.timeout)}"
+                @wa-input="${(e: any) => this.newLlm.timeout = parseInt(e.target.value)}"
+              ></wa-input>
+
+              <wa-checkbox 
+                ?checked="${this.newLlm.enabled}"
+                @wa-change="${(e: any) => this.newLlm.enabled = e.target.checked}"
+              >
+                Enabled
+              </wa-checkbox>
             </div>
           </div>
         ` : selectedLlm ? html`
@@ -363,70 +383,63 @@ export class LLMManager extends LitElement {
           <div class="detail-body">
             <div class="section">
               <h3>General Configuration</h3>
-              <sr-form-group label="LLM Name">
-                <input 
-                  type="text" 
-                  .value="${selectedLlm.name}" 
-                  @change="${(e: any) => this.updateLlmConfig({ name: e.target.value })}"
+              <wa-input 
+                label="LLM Name"
+                .value="${selectedLlm.name}" 
+                @wa-change="${(e: any) => this.updateLlmConfig({ name: e.target.value })}"
+              ></wa-input>
+
+              <wa-input 
+                label="API URL"
+                help-text="The full endpoint URL for the chat completions API"
+                .value="${selectedLlm.url}" 
+                @wa-change="${(e: any) => this.updateLlmConfig({ url: e.target.value })}"
+                placeholder="https://api.openai.com/v1/chat/completions"
+              ></wa-input>
+
+              <wa-input 
+                label="API Secret / Key"
+                type="password" 
+                .value="${selectedLlm.secret}" 
+                @focus="${(e: any) => { if (e.target.value === '***') e.target.value = ''; }}"
+                @blur="${(e: any) => { if (e.target.value === '') e.target.value = '***'; }}"
+                @wa-change="${(e: any) => this.updateLlmConfig({ secret: e.target.value })}"
+                placeholder="Enter new secret to update"
+                password-toggle
+              ></wa-input>
+
+              <div style="display: flex; gap: 0.5rem; align-items: flex-end; margin-bottom: 1.25rem;">
+                <wa-input 
+                  label="Model Name"
+                  .value="${selectedLlm.model || ''}" 
+                  @wa-change="${(e: any) => this.updateLlmConfig({ model: e.target.value })}"
+                  placeholder="e.g. gpt-4o"
+                  style="flex: 1; margin-bottom: 0;"
                 >
-              </sr-form-group>
-              <sr-form-group label="API URL" description="The full endpoint URL for the chat completions API">
-                <input 
-                  type="text" 
-                  .value="${selectedLlm.url}" 
-                  @change="${(e: any) => this.updateLlmConfig({ url: e.target.value })}"
-                  placeholder="https://api.openai.com/v1/chat/completions"
+                  ${this.availableModels.map(m => html`<wa-option value="${m}">${m}</wa-option>`)}
+                </wa-input>
+                <sr-button 
+                  variant="secondary" 
+                  @click="${() => this.fetchAvailableModels(selectedLlm.url, selectedLlm.secret, selectedLlm.id)}" 
+                  ?disabled="${this.fetchingModels || !selectedLlm.url}"
                 >
-              </sr-form-group>
-              <sr-form-group label="API Secret / Key">
-                <input 
-                  type="password" 
-                  .value="${selectedLlm.secret}" 
-                  @focus="${(e: any) => { if (e.target.value === '***') e.target.value = ''; }}"
-                  @blur="${(e: any) => { if (e.target.value === '') e.target.value = '***'; }}"
-                  @change="${(e: any) => this.updateLlmConfig({ secret: e.target.value })}"
-                  placeholder="Enter new secret to update"
-                >
-              </sr-form-group>
-              <sr-form-group label="Model Name">
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <input 
-                    type="text" 
-                    list="models-list-${selectedLlm.id}"
-                    .value="${selectedLlm.model || ''}" 
-                    @change="${(e: any) => this.updateLlmConfig({ model: e.target.value })}"
-                    placeholder="e.g. gpt-4o"
-                    style="flex: 1;"
-                  >
-                  <sr-button 
-                    variant="secondary" 
-                    @click="${() => this.fetchAvailableModels(selectedLlm.url, selectedLlm.secret, selectedLlm.id)}" 
-                    ?disabled="${this.fetchingModels || !selectedLlm.url}"
-                  >
-                    ${this.fetchingModels ? 'Loading...' : 'Fetch'}
-                  </sr-button>
-                </div>
-                <datalist id="models-list-${selectedLlm.id}">
-                  ${this.availableModels.map(m => html`<option value="${m}"></option>`)}
-                </datalist>
-              </sr-form-group>
-              <sr-form-group label="Timeout (seconds)">
-                <input 
-                  type="number" 
-                  .value="${selectedLlm.timeout.toString()}" 
-                  @change="${(e: any) => this.updateLlmConfig({ timeout: parseInt(e.target.value) })}"
-                >
-              </sr-form-group>
-              <sr-form-group label="Status">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                  <input 
-                    type="checkbox" 
-                    ?checked="${selectedLlm.enabled}"
-                    @change="${(e: any) => this.updateLlmConfig({ enabled: e.target.checked })}"
-                  >
-                  Enabled
-                </label>
-              </sr-form-group>
+                  ${this.fetchingModels ? 'Loading...' : 'Fetch'}
+                </sr-button>
+              </div>
+
+              <wa-input 
+                label="Timeout (seconds)"
+                type="number"
+                .value="${selectedLlm.timeout.toString()}" 
+                @wa-change="${(e: any) => this.updateLlmConfig({ timeout: parseInt(e.target.value) })}"
+              ></wa-input>
+
+              <wa-checkbox 
+                ?checked="${selectedLlm.enabled}"
+                @wa-change="${(e: any) => this.updateLlmConfig({ enabled: e.target.checked })}"
+              >
+                Enabled
+              </wa-checkbox>
             </div>
           </div>
         ` : html`

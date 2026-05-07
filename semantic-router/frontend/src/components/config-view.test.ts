@@ -18,8 +18,7 @@ test('renders loading state initially', async () => {
   const el = document.querySelector('config-view') as ConfigView;
   await el.updateComplete;
   
-  expect(el.shadowRoot?.querySelector('.loader')).toBeTruthy();
-  expect(el.shadowRoot?.querySelector('.loader')?.textContent).toContain('Loading configuration');
+  expect(el.shadowRoot?.querySelector('wa-spinner')).toBeTruthy();
 });
 
 test('renders form after data is loaded', async () => {
@@ -48,14 +47,14 @@ test('renders form after data is loaded', async () => {
 
   expect(el.shadowRoot?.querySelector('h2')?.textContent).toBe('Global Configuration');
   
-  const logLevelSelect = el.shadowRoot?.querySelector('#log_level') as HTMLSelectElement;
+  const logLevelSelect = el.shadowRoot?.querySelector('#log_level') as any;
   expect(logLevelSelect.value).toBe('all');
   
-  const logRetentionInput = el.shadowRoot?.querySelector('#log_retention') as HTMLInputElement;
+  const logRetentionInput = el.shadowRoot?.querySelector('#log_retention') as any;
   expect(logRetentionInput.value).toBe('60');
   
-  const llmSelect = el.shadowRoot?.querySelector('#default_llm') as HTMLSelectElement;
-  expect(llmSelect.textContent).toContain('GPT-4');
+  const llmSelect = el.shadowRoot?.querySelector('#default_llm') as any;
+  expect(llmSelect.value).toBe('1');
 });
 
 test('saves configuration correctly', async () => {
@@ -81,9 +80,9 @@ test('saves configuration correctly', async () => {
   await el.updateComplete;
 
   // Change log level
-  const select = el.shadowRoot?.querySelector('#log_level') as HTMLSelectElement;
+  const select = el.shadowRoot?.querySelector('#log_level') as any;
   select.value = 'error';
-  select.dispatchEvent(new Event('change'));
+  select.dispatchEvent(new CustomEvent('wa-change'));
 
   // Mock save response
   mockFetch.mockImplementation((url, init) => {
@@ -100,13 +99,13 @@ test('saves configuration correctly', async () => {
   saveBtn.click();
 
   await el.updateComplete;
-  expect(saveBtn.textContent?.trim()).toBe('Saving...');
+  expect(saveBtn.textContent?.trim()).toContain('Saving...');
 
   await new Promise(resolve => setTimeout(resolve, 300));
   await el.updateComplete;
 
-  expect(el.shadowRoot?.querySelector('.feedback.success')).toBeTruthy();
-  expect(el.shadowRoot?.querySelector('.feedback.success')?.textContent).toContain('Configuration saved successfully');
+  expect(el.shadowRoot?.querySelector('wa-callout[variant="success"]')).toBeTruthy();
+  expect(el.shadowRoot?.querySelector('wa-callout[variant="success"]')?.textContent).toContain('Configuration saved successfully');
 });
 
 test('handles save error correctly', async () => {
@@ -147,6 +146,6 @@ test('handles save error correctly', async () => {
   await new Promise(resolve => setTimeout(resolve, 300));
   await el.updateComplete;
 
-  expect(el.shadowRoot?.querySelector('.feedback.error')).toBeTruthy();
-  expect(el.shadowRoot?.querySelector('.feedback.error')?.textContent).toContain('Error saving configuration');
+  expect(el.shadowRoot?.querySelector('wa-callout[variant="danger"]')).toBeTruthy();
+  expect(el.shadowRoot?.querySelector('wa-callout[variant="danger"]')?.textContent).toContain('Error saving configuration');
 });

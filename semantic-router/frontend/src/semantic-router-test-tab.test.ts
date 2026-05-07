@@ -15,7 +15,7 @@ test('renders initial state correctly', async () => {
   const el = document.querySelector('semantic-router-test-tab') as SemanticRouterTestTab;
   await el.updateComplete;
   
-  const textarea = el.shadowRoot?.querySelector('textarea');
+  const textarea = el.shadowRoot?.querySelector('wa-textarea');
   const button = el.shadowRoot?.querySelector('sr-button');
   
   expect(textarea).toBeTruthy();
@@ -27,9 +27,9 @@ test('enables button when prompt is entered', async () => {
   const el = document.querySelector('semantic-router-test-tab') as SemanticRouterTestTab;
   await el.updateComplete;
   
-  const textarea = el.shadowRoot?.querySelector('textarea') as HTMLTextAreaElement;
+  const textarea = el.shadowRoot?.querySelector('wa-textarea') as any;
   textarea.value = 'hello';
-  textarea.dispatchEvent(new Event('input'));
+  textarea.dispatchEvent(new CustomEvent('wa-input'));
   
   await el.updateComplete;
   
@@ -51,9 +51,9 @@ test('calls Analyze API and displays resolution', async () => {
   const el = document.querySelector('semantic-router-test-tab') as SemanticRouterTestTab;
   await el.updateComplete;
   
-  const textarea = el.shadowRoot?.querySelector('textarea') as HTMLTextAreaElement;
+  const textarea = el.shadowRoot?.querySelector('wa-textarea') as any;
   textarea.value = 'hi';
-  textarea.dispatchEvent(new Event('input'));
+  textarea.dispatchEvent(new CustomEvent('wa-input'));
   
   await el.updateComplete;
   
@@ -71,7 +71,7 @@ test('calls Analyze API and displays resolution', async () => {
     })
   }));
   
-  await vi.waitUntil(() => !el.shadowRoot?.querySelector('.loader'));
+  await vi.waitUntil(() => !el.shadowRoot?.querySelector('wa-spinner'));
   await el.updateComplete;
   
   const responseArea = el.shadowRoot?.querySelector('.response-section');
@@ -95,9 +95,9 @@ test('calls Query API and displays full response', async () => {
   const el = document.querySelector('semantic-router-test-tab') as SemanticRouterTestTab;
   await el.updateComplete;
   
-  const textarea = el.shadowRoot?.querySelector('textarea') as HTMLTextAreaElement;
+  const textarea = el.shadowRoot?.querySelector('wa-textarea') as any;
   textarea.value = 'hi';
-  textarea.dispatchEvent(new Event('input'));
+  textarea.dispatchEvent(new CustomEvent('wa-input'));
   
   await el.updateComplete;
   
@@ -120,7 +120,7 @@ test('calls Query API and displays full response', async () => {
     body: expect.stringContaining('"content":"hi"')
   }));
   
-  await vi.waitUntil(() => !el.shadowRoot?.querySelector('.loader'));
+  await vi.waitUntil(() => !el.shadowRoot?.querySelector('wa-spinner'));
   await el.updateComplete;
   
   const responseArea = el.shadowRoot?.querySelector('.response-section');
@@ -140,9 +140,9 @@ test('displays error message on API failure', async () => {
   const el = document.querySelector('semantic-router-test-tab') as SemanticRouterTestTab;
   await el.updateComplete;
   
-  const textarea = el.shadowRoot?.querySelector('textarea') as HTMLTextAreaElement;
+  const textarea = el.shadowRoot?.querySelector('wa-textarea') as any;
   textarea.value = 'hi';
-  textarea.dispatchEvent(new Event('input'));
+  textarea.dispatchEvent(new CustomEvent('wa-input'));
   
   await el.updateComplete;
   
