@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { sharedStyles } from '../shared-styles';
+import './sr-button';
 
 interface LLM {
   id: number;
@@ -170,7 +171,7 @@ export class ConfigView extends LitElement {
       return html`
         <div class="loader">
           <p>Failed to load configuration.</p>
-          <button class="btn-primary" @click="${this._fetchData}">Retry</button>
+          <sr-button variant="primary" @click="${this._fetchData}">Retry</sr-button>
         </div>
       `;
     }
@@ -226,13 +227,13 @@ export class ConfigView extends LitElement {
         ` : ''}
 
         <div class="actions">
-          <button 
-            class="btn-primary" 
+          <sr-button 
+            variant="primary" 
             ?disabled="${this.isSaving}"
             @click="${this._saveConfig}"
           >
             ${this.isSaving ? 'Saving...' : 'Save Configuration'}
-          </button>
+          </sr-button>
         </div>
       </div>
       </div>

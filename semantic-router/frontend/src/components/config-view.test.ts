@@ -96,7 +96,7 @@ test('saves configuration correctly', async () => {
     return Promise.resolve({ ok: true, json: async () => [] });
   });
 
-  const saveBtn = el.shadowRoot?.querySelector('.btn-primary') as HTMLButtonElement;
+  const saveBtn = el.shadowRoot?.querySelector('sr-button') as HTMLElement;
   saveBtn.click();
 
   await el.updateComplete;
@@ -141,7 +141,7 @@ test('handles save error correctly', async () => {
     return Promise.resolve({ ok: true, json: async () => [] });
   });
 
-  const saveBtn = el.shadowRoot?.querySelector('.btn-primary') as HTMLButtonElement;
+  const saveBtn = el.shadowRoot?.querySelector('sr-button') as HTMLElement;
   saveBtn.click();
 
   await new Promise(resolve => setTimeout(resolve, 300));
