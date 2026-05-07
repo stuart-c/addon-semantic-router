@@ -22,6 +22,9 @@ export class SemanticRouterTestTab extends LitElement {
   @state()
   private error = '';
 
+  @state()
+  private stream = false;
+
   static styles = [
     sharedStyles,
     css`
@@ -142,6 +145,16 @@ export class SemanticRouterTestTab extends LitElement {
             @input="${(e: any) => this.prompt = e.target.value}"
             ?disabled="${this.loading}"
           ></textarea>
+          <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <input 
+              type="checkbox" 
+              id="stream-toggle" 
+              .checked="${this.stream}" 
+              @change="${(e: any) => this.stream = e.target.checked}"
+              ?disabled="${this.loading}"
+            >
+            <label for="stream-toggle" style="font-size: 0.875rem; color: var(--text-muted-color);">Stream response</label>
+          </div>
         </sr-form-group>
 
         <div class="actions" style="gap: 1rem;">
@@ -203,6 +216,7 @@ export class SemanticRouterTestTab extends LitElement {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          stream: this.stream,
           messages: [
             {
               role: 'user',
@@ -216,8 +230,50 @@ export class SemanticRouterTestTab extends LitElement {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.detail || `HTTP error! status: ${res.status}`);
       }
+      if (this.stream) {
+        const reader = res.body?.getReader();
+        if (!reader) throw new Error('Response body is null');
 
-      this.response = await res.json();
+        const decoder = new TextDecoder();
+        this.response = { choices: [{ message: { role: 'assistant', content: '' } }] };
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const dataStr = line.slice(6).trim();
+              if (dataStr === '[DONE]') continue;
+
+              try {
+                const data = JSON.parse(dataStr);
+                if (data.error) {
+                  throw new Error(data.error.message || 'Stream error');
+                }
+                
+                // Update metadata if available in chunk
+                if (data.route && !this.response.route) {
+                  this.response = { ...this.response, route: data.route, llm: data.llm };
+                }
+
+                const content = data.choices?.[0]?.delta?.content || '';
+                if (content) {
+                  this.response.choices[0].message.content += content;
+                  this.requestUpdate(); // Force Lit to re-render
+                }
+              } catch (e) {
+                console.error('Error parsing stream chunk', e);
+              }
+            }
+          }
+        }
+      } else {
+        this.response = await res.json();
+      }
     } catch (e: any) {
       this.error = e.message || 'An unexpected error occurred';
     } finally {
