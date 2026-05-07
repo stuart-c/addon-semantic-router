@@ -121,24 +121,47 @@ export const sharedStyles = css`
     justify-content: center;
     gap: 0.625rem;
     user-select: none;
+    white-space: nowrap;
+  }
+
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translateY(0);
   }
 
   .btn-primary {
     background-color: var(--primary-color);
-    color: var(--bg-color);
+    color: white;
     border-color: var(--primary-color);
   }
 
   .btn-primary:hover:not(:disabled) {
     background-color: var(--primary-hover);
     border-color: var(--primary-hover);
-    transform: translateY(-1px);
     box-shadow: 0 4px 12px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3);
   }
 
   .btn-primary:active:not(:disabled) {
-    transform: translateY(0);
     background-color: var(--primary-active);
+  }
+
+  .btn-secondary {
+    background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
+    color: var(--primary-color);
+    border-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.2);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.15);
+    border-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3);
+    box-shadow: 0 4px 8px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
+  }
+
+  .btn-secondary:active:not(:disabled) {
+    background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.2);
   }
 
   .btn-ghost {
@@ -163,11 +186,13 @@ export const sharedStyles = css`
     background-color: hsl(0, 84%, 60%);
     color: white;
     border-color: hsl(0, 84%, 60%);
+    box-shadow: 0 4px 12px hsla(0, 84%, 60%, 0.3);
   }
 
   .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    filter: grayscale(0.5);
   }
 
   /* Forms */
