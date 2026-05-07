@@ -13,7 +13,7 @@ export class SRBadge extends LitElement {
   `;
 
   render() {
-    let waVariant: any = 'neutral';
+    let waVariant: 'success' | 'danger' | 'primary' | 'warning' | 'neutral' = 'neutral';
     if (this.variant === 'enabled') waVariant = 'success';
     if (this.variant === 'disabled') waVariant = 'danger';
     if (this.variant === 'info') waVariant = 'primary';

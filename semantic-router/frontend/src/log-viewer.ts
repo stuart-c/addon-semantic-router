@@ -4,6 +4,10 @@ import './components/sr-badge';
 import './components/sr-button';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
+import '@awesome.me/webawesome/dist/components/card/card.js';
+import '@awesome.me/webawesome/dist/components/divider/divider.js';
+import '@awesome.me/webawesome/dist/components/callout/callout.js';
 
 interface LogEntry {
   id: string;
@@ -54,8 +58,8 @@ export class LogViewer extends LitElement {
       height: 100%;
       width: 100%;
       overflow: hidden;
-      color: var(--text-color);
-      background-color: var(--bg-color);
+      color: var(--wa-color-neutral-900);
+      background-color: var(--wa-color-neutral-50);
     }
 
     .toolbar {
@@ -97,15 +101,15 @@ export class LogViewer extends LitElement {
     th {
       position: sticky;
       top: 0;
-      background-color: var(--surface-color);
-      padding: 1rem;
+      background-color: var(--wa-color-neutral-0);
+      padding: var(--wa-spacing-medium);
       text-align: left;
-      font-size: 0.75rem;
-      font-weight: 700;
+      font-size: var(--wa-font-size-xs);
+      font-weight: var(--wa-font-weight-bold);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--text-secondary);
-      border-bottom: 1px solid var(--border-color);
+      color: var(--wa-color-neutral-500);
+      border-bottom: 1px solid var(--wa-color-neutral-200);
       z-index: 10;
       user-select: none;
     }
@@ -415,7 +419,7 @@ export class LogViewer extends LitElement {
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
         </wa-input>
-        ${this.loading ? html`<span style="font-size: 0.75rem; color: var(--text-secondary)">Updating...</span>` : ''}
+        ${this.loading ? html`<wa-spinner style="--track-width: 2px;"></wa-spinner>` : ''}
       </div>
 
       <div class="main-container">

@@ -11,6 +11,8 @@ import '@awesome.me/webawesome/dist/components/select/select.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/checkbox/checkbox.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/alert/alert.js';
+import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
 
 interface RouteUtterance {
   id: number;
@@ -85,18 +87,14 @@ export class RouteManager extends LitElement {
         flex: 1;
       }
 
-      .error-banner {
-        background-color: hsla(0, 84%, 60%, 0.1);
-        color: hsl(0, 84%, 60%);
-        padding: 1rem 1.5rem;
-        border-radius: var(--border-radius-sm);
-        margin-bottom: 1.5rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        border: 1px solid hsla(0, 84%, 60%, 0.2);
+      .loading-container {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
         align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 1rem;
+        color: var(--wa-color-neutral-500);
       }
 
       wa-input, wa-select {
@@ -312,7 +310,12 @@ export class RouteManager extends LitElement {
 
   render() {
     if (this.loading) {
-      return html`<div class="empty-state">Loading routes...</div>`;
+      return html`
+        <div class="loading-container">
+          <wa-spinner style="font-size: 3rem; --track-width: 4px;"></wa-spinner>
+          <p>Loading routes...</p>
+        </div>
+      `;
     }
 
     const selectedRoute = this.routes.find(r => r.id === this.selectedRouteId);
@@ -348,15 +351,11 @@ export class RouteManager extends LitElement {
       <div class="main-content">
         ${this.error ? html`
           <div style="padding: 2.5rem 2.5rem 0 2.5rem; max-width: 900px; margin: 0 auto; width: 100%;">
-            <div class="error-banner">
-              <span>${this.error}</span>
-              <sr-button variant="ghost" iconOnly @click="${() => this.error = null}">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </sr-button>
-            </div>
+            <wa-alert variant="danger" open closable @wa-after-hide="${() => this.error = null}">
+              <wa-icon slot="icon" name="exclamation-octagon"></wa-icon>
+              <strong>Error</strong><br />
+              ${this.error}
+            </wa-alert>
           </div>
         ` : ''}
 

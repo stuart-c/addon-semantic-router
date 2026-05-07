@@ -6,15 +6,15 @@ export const sharedStyles = css`
     height: 100%;
     width: 100%;
     overflow: hidden;
-    color: var(--text-color);
-    background-color: var(--bg-color);
+    color: var(--wa-color-neutral-900);
+    background-color: var(--wa-color-neutral-50);
   }
 
   /* Layout */
   .sidebar {
     width: 320px;
-    background-color: var(--surface-color);
-    border-right: 1px solid var(--border-color);
+    background-color: var(--wa-color-neutral-0);
+    border-right: 1px solid var(--wa-color-neutral-200);
     display: flex;
     flex-direction: column;
     z-index: 10;
@@ -22,17 +22,17 @@ export const sharedStyles = css`
 
   .sidebar-header {
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--border-color);
-    background-color: var(--surface-elevated);
+    border-bottom: 1px solid var(--wa-color-neutral-200);
+    background-color: var(--wa-color-neutral-50);
   }
 
   .sidebar-header h2 {
     margin: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--wa-font-size-xs);
+    font-weight: var(--wa-font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--text-secondary);
+    color: var(--wa-color-neutral-500);
   }
 
   .main-content {
@@ -40,7 +40,7 @@ export const sharedStyles = css`
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    background-color: var(--bg-color);
+    background-color: var(--wa-color-neutral-50);
     position: relative;
   }
 
@@ -50,16 +50,16 @@ export const sharedStyles = css`
     align-items: center;
     justify-content: center;
     height: 100%;
-    padding: 3rem;
+    padding: var(--wa-spacing-3xl);
     text-align: center;
-    color: var(--text-secondary);
-    animation: fadeIn 0.4s ease-out;
+    color: var(--wa-color-neutral-500);
+    animation: fadeIn var(--wa-transition-medium) ease-out;
   }
 
   .detail-header {
     padding: 1.5rem 2.5rem;
-    border-bottom: 1px solid var(--border-color);
-    background-color: var(--surface-color);
+    border-bottom: 1px solid var(--wa-color-neutral-200);
+    background-color: var(--wa-color-neutral-0);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -76,181 +76,37 @@ export const sharedStyles = css`
   }
 
   .section {
-    margin-bottom: 3rem;
-    background-color: var(--surface-color);
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--wa-spacing-2xl);
+    background-color: var(--wa-color-neutral-0);
+    padding: var(--wa-spacing-xl);
+    border-radius: var(--wa-border-radius-medium);
+    border: 1px solid var(--wa-color-neutral-200);
+    box-shadow: var(--wa-shadow-small);
   }
 
   .section h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin-bottom: 1.25rem;
-    color: var(--text-color);
+    font-size: var(--wa-font-size-medium);
+    font-weight: var(--wa-font-weight-semibold);
+    margin-bottom: var(--wa-spacing-large);
+    color: var(--wa-color-neutral-900);
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--wa-spacing-small);
   }
 
   /* Typography */
   h2 {
     margin-top: 0;
-    margin-bottom: 1.5rem;
-    font-size: 1.75rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    background: linear-gradient(135deg, var(--text-color) 0%, var(--text-secondary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    margin-bottom: var(--wa-spacing-large);
+    font-size: var(--wa-font-size-2xl);
+    font-weight: var(--wa-font-weight-bold);
+    letter-spacing: var(--wa-letter-spacing-tight);
+    color: var(--wa-color-neutral-900);
   }
 
-  /* Buttons */
-  .btn {
-    padding: 0.625rem 1.25rem;
-    border-radius: var(--border-radius-sm);
-    border: 1px solid transparent;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.875rem;
-    font-family: inherit;
-    transition: var(--transition-speed);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.625rem;
-    user-select: none;
-    white-space: nowrap;
-  }
-
-  .btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-  }
-
-  .btn:active:not(:disabled) {
-    transform: translateY(0);
-  }
-
-  .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background-color: var(--primary-hover);
-    border-color: var(--primary-hover);
-    box-shadow: 0 4px 12px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3);
-  }
-
-  .btn-primary:active:not(:disabled) {
-    background-color: var(--primary-active);
-  }
-
-  .btn-secondary {
-    background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
-    color: var(--primary-color);
-    border-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.2);
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.15);
-    border-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3);
-    box-shadow: 0 4px 8px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
-  }
-
-  .btn-secondary:active:not(:disabled) {
-    background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.2);
-  }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--text-secondary);
-    border-color: var(--border-color);
-  }
-
-  .btn-ghost:hover:not(:disabled) {
-    background-color: var(--border-color);
-    color: var(--text-color);
-    border-color: var(--text-tertiary);
-  }
-
-  .btn-danger {
-    background-color: hsla(0, 84%, 60%, 0.1);
-    color: hsl(0, 84%, 60%);
-    border-color: hsla(0, 84%, 60%, 0.2);
-  }
-
-  .btn-danger:hover:not(:disabled) {
-    background-color: hsl(0, 84%, 60%);
-    color: white;
-    border-color: hsl(0, 84%, 60%);
-    box-shadow: 0 4px 12px hsla(0, 84%, 60%, 0.3);
-  }
-
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    filter: grayscale(0.5);
-  }
-
-  /* Forms */
+  /* Forms & Inputs - Most are handled by wa-components, but some layout helpers remain */
   .form-group {
-    margin-bottom: 1.75rem;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.625rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-secondary);
-  }
-
-  input[type="text"], 
-  input[type="number"], 
-  input[type="password"],
-  select,
-  textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background-color: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    color: var(--text-color);
-    font-size: 0.9375rem;
-    font-family: inherit;
-    transition: var(--transition-speed);
-    box-sizing: border-box;
-  }
-
-  input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.15);
-  }
-
-  /* Badges */
-  .badge {
-    padding: 0.25rem 0.625rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
-
-  .badge-enabled {
-    background-color: hsla(145, 63%, 42%, 0.15);
-    color: hsl(145, 63%, 62%);
-  }
-
-  .badge-disabled {
-    background-color: hsla(0, 84%, 60%, 0.15);
-    color: hsl(0, 84%, 60%);
+    margin-bottom: var(--wa-spacing-large);
   }
 
   /* Animations */
@@ -265,6 +121,6 @@ export const sharedStyles = css`
   }
 
   .fade-in {
-    animation: fadeIn 0.4s ease-out;
+    animation: fadeIn var(--wa-transition-medium) ease-out;
   }
 `;
