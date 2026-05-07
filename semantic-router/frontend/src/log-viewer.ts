@@ -2,6 +2,8 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import './components/sr-badge';
 import './components/sr-button';
+import '@awesome.me/webawesome/dist/components/input/input.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 
 interface LogEntry {
   id: string;
@@ -57,7 +59,7 @@ export class LogViewer extends LitElement {
     }
 
     .toolbar {
-      padding: 1rem 1.5rem;
+      padding: 0.75rem 1.5rem;
       background-color: var(--surface-color);
       border-bottom: 1px solid var(--border-color);
       display: flex;
@@ -67,21 +69,8 @@ export class LogViewer extends LitElement {
       z-index: 30;
     }
 
-    .search-input {
-      background-color: var(--bg-color);
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius-sm);
-      padding: 0.625rem 1rem;
-      color: var(--text-color);
-      font-size: 0.875rem;
+    wa-input {
       width: 320px;
-      outline: none;
-      transition: var(--transition-speed);
-    }
-
-    .search-input:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
     }
 
     .main-container {
@@ -415,13 +404,17 @@ export class LogViewer extends LitElement {
 
     return html`
       <div class="toolbar">
-        <input 
-          type="text" 
-          class="search-input" 
+        <wa-input 
           placeholder="Filter logs..." 
           .value="${this.filterText}"
-          @input="${this.handleFilter}"
+          @wa-input="${this.handleFilter}"
+          clearable
         >
+          <svg slot="prefix" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </wa-input>
         ${this.loading ? html`<span style="font-size: 0.75rem; color: var(--text-secondary)">Updating...</span>` : ''}
       </div>
 

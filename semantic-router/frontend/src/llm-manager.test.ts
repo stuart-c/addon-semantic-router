@@ -43,7 +43,7 @@ test('shows detail view when LLM is selected', async () => {
     const heading = el.shadowRoot?.querySelector('.detail-header h2');
     expect(heading?.textContent).toBe('Test LLM');
 
-    const inputs = el.shadowRoot?.querySelectorAll('input');
-    // Name, URL, Model, Secret, Timeout, Status
-    expect(inputs?.length).toBeGreaterThanOrEqual(5);
+    const inputs = el.shadowRoot?.querySelectorAll('wa-input');
+    // Name, URL, Secret, Timeout (Model is wa-select)
+    expect(inputs?.length).toBeGreaterThanOrEqual(4);
 });

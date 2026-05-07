@@ -4,6 +4,9 @@ import { sharedStyles } from './shared-styles';
 import './components/sr-button';
 import './components/sr-badge';
 import './components/sr-form-group';
+import '@awesome.me/webawesome/dist/components/textarea/textarea.js';
+import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
+import '@awesome.me/webawesome/dist/components/checkbox/checkbox.js';
 
 @customElement('semantic-router-test-tab')
 export class SemanticRouterTestTab extends LitElement {
@@ -42,9 +45,8 @@ export class SemanticRouterTestTab extends LitElement {
       padding: 1rem;
     }
 
-    textarea {
-      min-height: 160px;
-      resize: vertical;
+    wa-textarea {
+      --wa-input-height-base: 160px;
     }
 
     .actions {
@@ -110,19 +112,10 @@ export class SemanticRouterTestTab extends LitElement {
       animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
     }
 
-    .loader {
-      width: 16px;
-      height: 16px;
-      border: 2px solid currentColor;
-      border-bottom-color: transparent;
-      border-radius: 50%;
-      display: inline-block;
-      animation: rotation 0.8s linear infinite;
-    }
-
-    @keyframes rotation {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    wa-spinner {
+      font-size: 1rem;
+      margin-right: 0.5rem;
+      --track-width: 2px;
     }
 
     @keyframes shake {
@@ -137,32 +130,33 @@ export class SemanticRouterTestTab extends LitElement {
   render() {
     return html`
       <div class="test-container">
-        <sr-form-group label="Test Prompt" description="Enter a query to see which route it matches and get the LLM response.">
-          <textarea
-            id="prompt"
-            placeholder="Enter a prompt to test routing..."
-            .value="${this.prompt}"
-            @input="${(e: any) => this.prompt = e.target.value}"
+        <wa-textarea
+          id="prompt"
+          label="Test Prompt"
+          help-text="Enter a query to see which route it matches and get the LLM response."
+          placeholder="Enter a prompt to test routing..."
+          .value="${this.prompt}"
+          @wa-input="${(e: any) => this.prompt = e.target.value}"
+          ?disabled="${this.loading}"
+          rows="5"
+        ></wa-textarea>
+        <div style="margin-top: -1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <wa-checkbox 
+            id="stream-toggle" 
+            .checked="${this.stream}" 
+            @wa-change="${(e: any) => this.stream = e.target.checked}"
             ?disabled="${this.loading}"
-          ></textarea>
-          <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-            <input 
-              type="checkbox" 
-              id="stream-toggle" 
-              .checked="${this.stream}" 
-              @change="${(e: any) => this.stream = e.target.checked}"
-              ?disabled="${this.loading}"
-            >
-            <label for="stream-toggle" style="font-size: 0.875rem; color: var(--text-muted-color);">Stream response</label>
-          </div>
-        </sr-form-group>
+          >
+            Stream response
+          </wa-checkbox>
+        </div>
 
         <div class="actions" style="gap: 1rem;">
-          <sr-button variant="secondary" @click="${this._handleResolve}" ?disabled="${this.loading || !this.prompt.trim()}">
-            ${this.loading ? html`<span class="loader"></span> Analyzing...` : 'Analyze Route'}
+          <sr-button variant="ghost" @click="${this._handleResolve}" ?disabled="${this.loading || !this.prompt.trim()}">
+            ${this.loading ? html`<wa-spinner></wa-spinner> Analyzing...` : 'Analyze Route'}
           </sr-button>
           <sr-button @click="${this._handleTest}" ?disabled="${this.loading || !this.prompt.trim()}">
-            ${this.loading ? html`<span class="loader"></span> Testing...` : 'Run Full Test'}
+            ${this.loading ? html`<wa-spinner></wa-spinner> Testing...` : 'Run Full Test'}
           </sr-button>
         </div>
 

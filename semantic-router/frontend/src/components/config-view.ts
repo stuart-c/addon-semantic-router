@@ -2,6 +2,11 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { sharedStyles } from '../shared-styles';
 import './sr-button';
+import '@awesome.me/webawesome/dist/components/select/select.js';
+import '@awesome.me/webawesome/dist/components/option/option.js';
+import '@awesome.me/webawesome/dist/components/input/input.js';
+import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
+import '@awesome.me/webawesome/dist/components/callout/callout.js';
 
 interface LLM {
   id: number;
@@ -41,7 +46,7 @@ export class ConfigView extends LitElement {
       }
 
       .config-card h2 {
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
       }
 
       .actions {
@@ -51,28 +56,12 @@ export class ConfigView extends LitElement {
         margin-top: 3rem;
       }
 
+      wa-select, wa-input {
+        margin-bottom: 1.5rem;
+      }
+
       .feedback {
         margin-top: 2rem;
-        padding: 1rem 1.25rem;
-        border-radius: var(--border-radius-sm);
-        font-size: 0.9375rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      .feedback.success {
-        background-color: hsla(145, 63%, 42%, 0.1);
-        color: hsl(145, 63%, 62%);
-        border: 1px solid hsla(145, 63%, 42%, 0.2);
-      }
-
-      .feedback.error {
-        background-color: hsla(0, 84%, 60%, 0.1);
-        color: hsl(0, 84%, 60%);
-        border: 1px solid hsla(0, 84%, 60%, 0.2);
       }
 
       .loader {
@@ -85,17 +74,9 @@ export class ConfigView extends LitElement {
         gap: 1.5rem;
       }
 
-      .spinner {
-        width: 32px;
-        height: 32px;
-        border: 3px solid var(--border-color);
-        border-radius: 50%;
-        border-top-color: var(--primary-color);
-        animation: spin 0.8s linear infinite;
-      }
-
-      @keyframes spin {
-        to { transform: rotate(360deg); }
+      wa-spinner {
+        font-size: 2rem;
+        --track-width: 3px;
       }
     `
   ];
@@ -161,7 +142,7 @@ export class ConfigView extends LitElement {
     if (this.isLoading) {
       return html`
         <div class="loader">
-          <div class="spinner"></div>
+          <wa-spinner></wa-spinner>
           <p>Loading configuration...</p>
         </div>
       `;
@@ -181,48 +162,51 @@ export class ConfigView extends LitElement {
         <div class="config-card">
         <h2>Global Configuration</h2>
         
-        <div class="form-group">
-          <label for="default_llm">Default LLM</label>
-          <select 
-            id="default_llm"
-            @change="${(e: any) => this.config!.default_llm = e.target.value ? Number(e.target.value) : null}"
-          >
-            <option value="" ?selected="${this.config.default_llm === null}">None</option>
-            ${this.llms.map(llm => html`
-              <option value="${llm.id}" ?selected="${this.config?.default_llm === llm.id}">
-                ${llm.name}
-              </option>
-            `)}
-          </select>
-        </div>
+        <wa-select 
+          id="default_llm"
+          label="Default LLM"
+          help-text="Choose the primary LLM for routing"
+          value="${this.config.default_llm ? String(this.config.default_llm) : ''}"
+          @wa-change="${(e: any) => this.config!.default_llm = e.target.value ? Number(e.target.value) : null}"
+        >
+          <wa-option value="">None</wa-option>
+          ${this.llms.map(llm => html`
+            <wa-option value="${llm.id}">
+              ${llm.name}
+            </wa-option>
+          `)}
+        </wa-select>
 
-        <div class="form-group">
-          <label for="log_level">Log Level</label>
-          <select 
-            id="log_level"
-            @change="${(e: any) => this.config!.log_level = e.target.value}"
-          >
-            <option value="all" ?selected="${this.config.log_level === 'all'}">All</option>
-            <option value="default" ?selected="${this.config.log_level === 'default'}">Default</option>
-            <option value="error" ?selected="${this.config.log_level === 'error'}">Error</option>
-          </select>
-        </div>
+        <wa-select 
+          id="log_level"
+          label="Log Level"
+          help-text="Control the verbosity of the application logs"
+          value="${this.config.log_level}"
+          @wa-change="${(e: any) => this.config!.log_level = e.target.value}"
+        >
+          <wa-option value="all">All</wa-option>
+          <wa-option value="default">Default</wa-option>
+          <wa-option value="error">Error</wa-option>
+        </wa-select>
 
-        <div class="form-group">
-          <label for="log_retention">Log Retention (days)</label>
-          <input 
-            type="number" 
-            id="log_retention"
-            .value="${String(this.config.log_retention)}"
-            @input="${(e: any) => this.config!.log_retention = Number(e.target.value)}"
-            min="1"
-            max="365"
-          >
-        </div>
+        <wa-input 
+          id="log_retention"
+          label="Log Retention"
+          help-text="Number of days to keep logs in the database"
+          type="number" 
+          .value="${String(this.config.log_retention)}"
+          @wa-input="${(e: any) => this.config!.log_retention = Number(e.target.value)}"
+          min="1"
+          max="365"
+        >
+          <span slot="suffix">days</span>
+        </wa-input>
 
         ${this.feedback ? html`
-          <div class="feedback ${this.feedback.type}">
-            ${this.feedback.type === 'success' ? '✓' : '✗'} ${this.feedback.message}
+          <div class="feedback">
+            <wa-callout variant="${this.feedback.type === 'success' ? 'success' : 'danger'}">
+              ${this.feedback.message}
+            </wa-callout>
           </div>
         ` : ''}
 
