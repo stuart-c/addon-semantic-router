@@ -185,6 +185,25 @@ def test_fetch_llm_models():
         assert "Internal error" in resp.text
 
 
+def test_fetch_llm_models_validation():
+    # Test line 36 in crud.py
+    resp = client.post("/api/llm/models", json={"url": ""})
+    assert resp.status_code == 400
+    assert "URL is required" in resp.text
+
+
+def test_fetch_llm_models_empty_data():
+    # Test line 58 in crud.py
+    with patch("httpx.AsyncClient.get") as mock_get:
+        mock_resp = MagicMock(status_code=200)
+        mock_resp.json.return_value = {"not_data": []}
+        mock_get.return_value = mock_resp
+
+        resp = client.post("/api/llm/models", json={"url": "http://test"})
+        assert resp.status_code == 200
+        assert resp.json() == []
+
+
 def test_fetch_llm_models_with_id():
     # Setup: Create an LLM with a secret
     create_resp = client.post(
@@ -362,6 +381,23 @@ def test_log_operations():
     # Delete via API
     response = client.delete("/api/log/test-log-id")
     assert response.status_code == 204
+
+
+def test_log_create_dict():
+    from backend import crud
+
+    db = next(override_get_db())
+    log_data = {
+        "id": "test-dict-log",
+        "timestamp": datetime.now(),
+        "duration": 0.1,
+        "query": "dict query",
+        "response": "dict response",
+    }
+    obj = crud.log.create(db, obj_in=log_data)
+    assert obj.id == "test-dict-log"
+    assert obj.query == "dict query"
+    crud.log.remove(db, id="test-dict-log")
 
 
 def test_frontend_route():
@@ -762,3 +798,20 @@ def test_resolve_prompt_route():
         data = response.json()
         assert data["name"] is None
         assert data["score"] == 0.0
+
+
+def test_main_static_mounts():
+    # Test the static file mounting logic in main.py
+    from backend.main import setup_static_files
+
+    mock_app = MagicMock()
+    with (
+        patch("backend.main.os.path.exists", return_value=True),
+        patch("backend.main.StaticFiles", return_value=MagicMock()),
+    ):
+        setup_static_files(mock_app)
+
+    # Check if mount was called for /assets and /static
+    mount_paths = [call.args[0] for call in mock_app.mount.call_args_list]
+    assert "/assets" in mount_paths
+    assert "/static" in mount_paths
