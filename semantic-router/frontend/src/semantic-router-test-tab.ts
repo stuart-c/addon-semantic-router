@@ -7,6 +7,9 @@ import './components/sr-form-group';
 import '@awesome.me/webawesome/dist/components/textarea/textarea.js';
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
 import '@awesome.me/webawesome/dist/components/checkbox/checkbox.js';
+import '@awesome.me/webawesome/dist/components/callout/callout.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/divider/divider.js';
 
 @customElement('semantic-router-test-tab')
 export class SemanticRouterTestTab extends LitElement {
@@ -90,26 +93,14 @@ export class SemanticRouterTestTab extends LitElement {
       margin: 0;
       white-space: pre-wrap;
       word-break: break-word;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9375rem;
-      line-height: 1.6;
-      color: var(--text-color);
-      background-color: var(--bg-color);
-      padding: 1.25rem;
-      border-radius: var(--border-radius-sm);
-      border: 1px solid var(--border-color);
-    }
-
-    .error {
-      color: hsl(0, 84%, 60%);
-      background-color: hsla(0, 84%, 60%, 0.1);
-      padding: 1rem 1.25rem;
-      border-radius: var(--border-radius-sm);
-      border: 1px solid hsla(0, 84%, 60%, 0.2);
-      margin-top: 1rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+      font-family: var(--wa-font-family-mono);
+      font-size: var(--wa-font-size-small);
+      line-height: var(--wa-line-height-looser);
+      color: var(--wa-color-neutral-900);
+      background-color: var(--wa-color-neutral-50);
+      padding: var(--wa-spacing-medium);
+      border-radius: var(--wa-border-radius-small);
+      border: 1px solid var(--wa-color-neutral-200);
     }
 
     wa-spinner {
@@ -160,14 +151,20 @@ export class SemanticRouterTestTab extends LitElement {
           </sr-button>
         </div>
 
-        ${this.error ? html`<div class="error">${this.error}</div>` : ''}
+        ${this.error ? html`
+          <wa-callout variant="danger" open closable @wa-after-hide="${() => this.error = ''}">
+            <wa-icon slot="icon" name="exclamation-octagon"></wa-icon>
+            <strong>Testing Error</strong><br />
+            ${this.error}
+          </wa-callout>
+        ` : ''}
 
         ${this.resolution ? html`
           <div class="response-section">
             <div class="response-header">
               <span class="response-title">Semantic Resolution</span>
               <div class="metadata">
-                <sr-badge variant="${this.resolution.name ? 'success' : 'warning'}">
+                <sr-badge variant="${this.resolution.name ? 'enabled' : 'warning'}">
                   Match: ${this.resolution.name || 'None'}
                 </sr-badge>
                 <sr-badge variant="info">
@@ -175,7 +172,11 @@ export class SemanticRouterTestTab extends LitElement {
                 </sr-badge>
               </div>
             </div>
-            <p>The prompt was resolved using the current Semantic Router configuration. A match score represents the cosine similarity between the prompt and the route's utterances.</p>
+            <wa-callout variant="${this.resolution.name ? 'success' : 'neutral'}" open>
+              <wa-icon slot="icon" name="${this.resolution.name ? 'check-circle' : 'info-circle'}"></wa-icon>
+              The prompt was resolved using the current Semantic Router configuration. 
+              A match score represents the cosine similarity between the prompt and the route's utterances.
+            </wa-callout>
           </div>
         ` : ''}
 

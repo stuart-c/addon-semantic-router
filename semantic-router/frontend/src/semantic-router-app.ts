@@ -36,18 +36,18 @@ export class SemanticRouterApp extends LitElement {
       }
 
       wa-tab-group::part(nav) {
-        padding: 0 2.5rem;
-        background-color: var(--surface-color);
-        border-bottom: 1px solid var(--border-color);
-        box-shadow: var(--shadow-sm);
+        padding: 0 var(--wa-spacing-2xl);
+        background-color: var(--wa-color-neutral-0);
+        border-bottom: 1px solid var(--wa-color-neutral-200);
+        box-shadow: var(--wa-shadow-small);
       }
 
       wa-tab-group::part(body) {
         flex: 1;
         display: flex;
         flex-direction: column;
-        padding: 2.5rem;
-        background-color: var(--bg-color);
+        padding: var(--wa-spacing-2xl);
+        background-color: var(--wa-color-neutral-50);
         overflow: hidden;
       }
 
@@ -65,12 +65,12 @@ export class SemanticRouterApp extends LitElement {
       }
 
       .content-area {
-        background-color: var(--surface-color);
-        border-radius: var(--border-radius);
+        background-color: var(--wa-color-neutral-0);
+        border-radius: var(--wa-border-radius-medium);
         min-height: 500px;
         flex: 1;
-        border: 1px solid var(--border-color);
-        box-shadow: var(--shadow-md);
+        border: 1px solid var(--wa-color-neutral-200);
+        box-shadow: var(--wa-shadow-medium);
         animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
         display: flex;

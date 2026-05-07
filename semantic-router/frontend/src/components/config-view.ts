@@ -36,13 +36,13 @@ export class ConfigView extends LitElement {
       }
 
       .config-card {
-        background-color: var(--surface-color);
-        border-radius: var(--border-radius);
-        padding: 2.5rem;
-        border: 1px solid var(--border-color);
+        background-color: var(--wa-color-neutral-0);
+        border-radius: var(--wa-border-radius-medium);
+        padding: var(--wa-spacing-2xl);
+        border: 1px solid var(--wa-color-neutral-200);
         max-width: 640px;
-        margin: 2rem auto;
-        box-shadow: var(--shadow-lg);
+        margin: var(--wa-spacing-2xl) auto;
+        box-shadow: var(--wa-shadow-large);
       }
 
       .config-card h2 {
@@ -70,8 +70,8 @@ export class ConfigView extends LitElement {
         justify-content: center;
         align-items: center;
         height: 400px;
-        color: var(--text-secondary);
-        gap: 1.5rem;
+        color: var(--wa-color-neutral-500);
+        gap: var(--wa-spacing-medium);
       }
 
       wa-spinner {

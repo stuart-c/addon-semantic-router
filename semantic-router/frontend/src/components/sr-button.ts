@@ -8,6 +8,7 @@ export class SRButton extends LitElement {
   @property({ type: Boolean }) disabled = false;
   @property({ type: Boolean }) iconOnly = false;
   @property({ type: String }) type: 'button' | 'submit' = 'button';
+  @property({ type: Boolean }) loading = false;
 
   static styles = css`
     :host {
@@ -24,21 +25,19 @@ export class SRButton extends LitElement {
   `;
 
   render() {
-    let waVariant: any = 'default';
+    let waVariant: 'primary' | 'danger' | 'default' = 'default';
     if (this.variant === 'primary') waVariant = 'primary';
     if (this.variant === 'danger') waVariant = 'danger';
     
-    // Ghost variant mapping
-    const isGhost = this.variant === 'ghost';
-
     return html`
       <wa-button 
         type="${this.type}"
         variant="${waVariant}"
         ?outline="${this.variant === 'secondary'}"
-        ?ghost="${isGhost}"
+        ?ghost="${this.variant === 'ghost'}"
         ?disabled="${this.disabled}"
         ?circle="${this.iconOnly}"
+        ?loading="${this.loading}"
       >
         <slot></slot>
       </wa-button>
