@@ -179,6 +179,27 @@ class ChatCompletionResponse(BaseModel):
     model: Optional[str] = None
     choices: List[ChatCompletionResponseChoice]
     usage: ChatCompletionUsage
+    llm: Optional[str] = None
+    route: Optional[str] = None
+
+
+class ChatDelta(BaseModel):
+    role: Optional[str] = None
+    content: Optional[str] = None
+
+
+class ChatCompletionChunkChoice(BaseModel):
+    index: int
+    delta: ChatDelta
+    finish_reason: Optional[str] = None
+
+
+class ChatCompletionChunk(BaseModel):
+    id: str
+    object: str = "chat.completion.chunk"
+    created: int
+    model: Optional[str] = None
+    choices: List[ChatCompletionChunkChoice]
     # Custom fields for Semantic Router
     route: Optional[str] = None
     llm: Optional[str] = None

@@ -110,9 +110,14 @@ test('calls Query API and displays full response', async () => {
   
   expect(mockFetch).toHaveBeenCalledWith('/query', expect.objectContaining({
     method: 'POST',
-    body: JSON.stringify({
-      messages: [{ role: 'user', content: 'hi' }]
-    })
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: expect.stringContaining('"stream":false')
+  }));
+  
+  expect(mockFetch).toHaveBeenCalledWith('/query', expect.objectContaining({
+    body: expect.stringContaining('"content":"hi"')
   }));
   
   await vi.waitUntil(() => !el.shadowRoot?.querySelector('.loader'));
