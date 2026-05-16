@@ -9,7 +9,7 @@ authors = [
     { name = "Stuart Clark", email = "stuart.clark@Jahingo.com" }
 ]
 dependencies = [
-    "semantic-router[fastembed]==0.1.12",
+    "semantic-router[fastembed]==0.1.13",
     "fastembed==0.3.3",
     "httpx==0.28.1",
     "fastapi==0.136.1",
