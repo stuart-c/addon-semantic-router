@@ -10,7 +10,7 @@ authors = [
 ]
 dependencies = [
     "semantic-router[fastembed]==0.1.13",
-    "fastembed==0.3.3",
+    "fastembed==0.8.0",
     "httpx==0.28.1",
     "fastapi==0.136.1",
     "uvicorn==0.47.0",
